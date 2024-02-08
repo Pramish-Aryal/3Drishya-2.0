@@ -1,26 +1,45 @@
-import * as THREE from 'three';
+import * as Three from 'three';
+import {MathUtils} from 'three/src/math/MathUtils.js';
+// import * as Math from 'three/src/math';
+import {Vector3} from 'three/src/math/Vector3.js';
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+import {get_angle, update_angle} from './mover.js';
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
+import {create_cube} from './geometry_generator.js';
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+const renderer = new Three.WebGLRenderer();
 
-camera.position.z = 5;
+const scene = new Three.Scene();
+const camera = new Three.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+camera.position.set(0, 0, 100);
+camera.lookAt(0, 0, 0);
+
+const cubes = [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0xff00ff), create_cube()];
 
 function animate() {
-	requestAnimationFrame( animate );
 
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
+    cubes.forEach(cube => {
+        cube.rotation.x = get_angle();
+        cube.rotation.y = get_angle();
+    });
+
+    update_angle();
 
 	renderer.render( scene, camera );
+
+	requestAnimationFrame( animate );
 }
 
-animate();
+
+function main() {
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+    cubes.forEach(cube => {
+        scene.add( cube );
+    });
+    camera.position.z = 5;
+    animate();
+}
+
+main();

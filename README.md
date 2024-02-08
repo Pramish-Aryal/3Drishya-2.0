@@ -8,7 +8,7 @@ npm install
 
 With the working directory as the root directory run,
 ```
-npm run
+npm run dev
 ```
 
 That should be it.
