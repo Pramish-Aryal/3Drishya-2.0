@@ -195,7 +195,6 @@ a{
 }
 
 .SceneContainer {
-    width: 100%;
     text-align: center;
     color: black; 
     font-size: 40px; 
@@ -203,7 +202,7 @@ a{
     font-weight: 700; 
     text-align: center;
     background: linear-gradient(180deg, #E9EBE6 0%, #D0D0CD 100%);
-    padding-bottom: 30px;
+    padding: 30px;
 }
 
 .Scenes{
@@ -340,7 +339,7 @@ a{
 .AboutusContent{
     display: flex;
     flex-wrap: wrap;
-    gap:50px;
+    gap:75px;
     justify-content: center; 
     padding: 25px;
 }
