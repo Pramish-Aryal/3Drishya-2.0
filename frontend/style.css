@@ -90,8 +90,11 @@ a{
     font-size: 25px; 
     font-family: Helvetica; 
     font-weight: 300; 
-    border-radius: 10px;
-    
+    border-radius: 10px; 
+}
+
+.explore:hover{
+    background-color:#717171
 }
 
 .About{
