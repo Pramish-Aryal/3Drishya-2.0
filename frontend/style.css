@@ -2,7 +2,7 @@ body{
     padding: 0px;
     margin: 0px;
     overflow-x: hidden;
-    background: linear-gradient(to bottom, white 1%,#b1b5ea 100%);
+    background: linear-gradient(to bottom, white 1%, #f5f5f5 100%);
 }
 
 a{
@@ -76,13 +76,13 @@ a{
     font-family: Helvetica; 
     font-weight: 500; 
     word-wrap: break-word;
-    padding: 50px;
+    padding: 60px;
 }
 
 .Nepal{
-    padding: 25px;
-    width: 100%;
+    padding-top: 30px;
     bottom: 0px;
+    width: 100%;
 }
 
 .explore{
@@ -104,7 +104,8 @@ a{
     color: black; 
     font-size: 40px; 
     font-family: Helvetica; 
-    font-weight: 700; 
+    font-weight: 700;
+    margin-inline:90px; 
     /* background: linear-gradient(180deg, #ECEEE9 0%, #C8C8C5 100%); */
 }
 .AboutTopic{
