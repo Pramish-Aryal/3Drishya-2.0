@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <title>Landing Page</title>
+    <title>3Drishya</title>
 </head>
 <body>
     <!-- <a href="/src/editor.html">Go to Editor</a> -->
@@ -14,14 +14,14 @@
             <div class="Line1"></div>
             <div class="NavbarContent">
                 <div class="HomeNav" onclick="scrollToSection('Home')" >Home</div>
-                <div class="FeaturesNav" onclick="scrollToSection('Features')">Features</div>
                 <div class="AboutNav" onclick="scrollToSection('About')">About</div>
+                <div class="FeaturesNav" onclick="scrollToSection('Features')">Features</div>
                 <div class="ScopeNav" onclick="scrollToSection('Scope')">Scope</div>
             </div>    
         </div>
         <div id="Home" class="Home">
             <div class="HomeInfo">3D Reconstruction for Virtual Exhibitions</div>
-            <button class="explore"> Explore now</button>
+            <button class="explore" onclick="scrollToSection('About')"> Explore now</button>
           <img class="Nepal" src="images/Nepal.png" />
         </div>
         <div id="About" class="About">
@@ -55,7 +55,7 @@
                 </div>
                 <div class="Feature2" >
                     <div class="FeatureInfo">
-                        Mouse picking to detect and for Object transformation controls with movement, scaling and rotation settings..
+                        Mouse picking to detect and for Object transformation controls with movement, scaling and rotation settings
                     </div>
                 </div>
                 <div class="Feature3" >
@@ -75,13 +75,13 @@
                 <!-- Full-width images with number and caption text -->
                 <div class="Scenes">
                     <div class="Scene" onclick="gotoeditor('src/editor.html')">
-                        <div class="sceneInfo">Caption Text</div>
-                        <img src="images/Nepal.png" style="width:100%">
+                        <div class="sceneInfo">PI Chautari v1</div>
+                        <img src="images/editor/mesh.png" style="width:100%">
                     </div>
                   
                     <div class="Scene" onclick="gotoeditor('src/editor.html')">
-                        <div class="sceneInfo">Caption Two</div>
-                        <img src="images/Nepal.png" style="width:100%">
+                        <div class="sceneInfo">PI Chautari v2</div>
+                        <img src="images/editor/mesh2.png" style="width:100%">
                     </div>
             
                     <!-- Next and previous buttons -->

@@ -141,11 +141,10 @@ a{
 }
 
 .FeaturesContent {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); 
-    grid-template-rows: repeat(2, auto); 
+    display: flex;
     gap: 25px; 
-    place-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     padding: 50px;
 }
 .Feature1,.Feature2,.Feature3,.Feature4{
@@ -153,7 +152,7 @@ a{
     flex-direction: column;
     justify-content: center;
     width: 550px; 
-    height: 226px;
+    height: 225px;
     padding: 10px;
     background: linear-gradient(180deg, #ECEDE9 0%, #CDCECA 100%);
     box-shadow: 0px 5px 4px rgba(0, 0, 0, 0.25); 
@@ -162,16 +161,24 @@ a{
 }
 
 .Feature1{
-   background-image: "";
+    background-image: url("images/editor/camera.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
 }
 .Feature2{
-    background-image: "";
+    background-image: url("images/editor/object.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
  }
  .Feature3{
-    background-image: "";
+    background-image: url("images/editor/text.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
  }
  .Feature4{
-    background-image: "";
+    background-image: url("images/editor/mesh.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
  }
 
 .FeatureInfo{
@@ -180,8 +187,11 @@ a{
     color: black; 
     font-size: 20px; 
     font-family: Helvetica; 
-    font-weight: 500;
+    font-weight: 700;
     margin-top: auto;
+    border-radius: 10px; 
+    border: 1px black solid;
+    background-color: white;
 }
 
 .SceneContainer {
@@ -279,7 +289,7 @@ a{
 
 .Scope1,.Scope2{
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     height: 200px;
     width: 40vw; 
     background: linear-gradient(90deg, #D1D2CE 0%, #EBEDE8 100%); 
@@ -292,11 +302,15 @@ a{
 }
 
 .Scope1{
-    background-image: "";
+    background-image: url("images/editor/meshEditor.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
 }
 
 .Scope2{
-    background-image: "";
+    background-image: url("images/editor/mesh.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
 }
 
 .ScopeInfo{
@@ -305,8 +319,11 @@ a{
     color: black; 
     font-size: 20px; 
     font-family: Helvetica; 
-    font-weight: 500;
+    font-weight: 700;
     margin-top: auto;
+    border-radius: 10px; 
+    border: 1px black solid;
+    background-color: white;
 }
 
 .AboutUs{
@@ -321,10 +338,10 @@ a{
 }
 
 .AboutusContent{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 25px; 
-    place-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap:50px;
+    justify-content: center; 
     padding: 25px;
 }
 
