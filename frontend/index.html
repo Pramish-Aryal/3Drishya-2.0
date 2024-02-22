@@ -13,61 +13,147 @@
             <div class="Drishya">3Drishya</div>
             <div class="Line1"></div>
             <div class="NavbarContent">
-                <div class="HomeNav" >Home</div>
-                <div class="FeaturesNav">Features</div>
-                <div class="AboutNav">About</div>
-                <div class="ScopeNav" >Scope</div>
+                <div class="HomeNav" onclick="scrollToSection('Home')" >Home</div>
+                <div class="FeaturesNav" onclick="scrollToSection('Features')">Features</div>
+                <div class="AboutNav" onclick="scrollToSection('About')">About</div>
+                <div class="ScopeNav" onclick="scrollToSection('Scope')">Scope</div>
             </div>    
         </div>
-        <div class="Home">
+        <div id="Home" class="Home">
             <div class="HomeInfo">3D Reconstruction for Virtual Exhibitions</div>
+            <button class="explore"> Explore now</button>
           <img class="Nepal" src="images/Nepal.png" />
         </div>
-        <div class="About">
+        <div id="About" class="About">
             <div>About</div>
-        </div>
-        <div class="Features">
-            <div>Features</div>
-            <div class="FeaturesContent">
-                <div class="Feature1"></div>
-                <div class="Feature2" ></div>
-                <div class="Feature3" ></div>
-                <div class="Feature4" ></div>
+            <div class="AboutTopic">Introduction</div>
+            <div class = "AboutInfo">
+            Reconstruction of a 3D environment of good quality is essential for the interaction between
+            humans and the virtual environment. The solution for these problems has seen many developments, most notably NeRF and recently, through the development of Gaussian Splats.
+            The easy reconstruction of a 3D environment, with an online editing and viewing tool capable of demonstrating the 3D environment interactively is important for hosting immersive
+            virtual exhibitions and tours.
+            </div>
+
+            <div class="AboutTopic">Problem Statements</div>
+            <div class="AboutInfo">
+            Traditionally, showcasing exhibits is limited by not only geographical constraints but the
+            need for physical space as well. These exhibitions may not provide sufficient opportunities
+            for visitors to actively engage, interact, and explore exhibits in a personalized and immersive
+            manner, limiting the overall visitor experience. With this in mind, creating a digital solution
+            that can accurately and realistically represent physically existing objects in a virtual environment is something this project tries to fulfill. As such a pipeline to effectively capture
+            and recreate the intricate details as well as textures of physical objects in a virtual setting,
+            enabling viewers to explore and appreciate them remotely, regardless of their location.
             </div>
         </div>
-        <div class="Scope">
+        <div id="Features" class="Features">
+            <div>Features</div>
+            <div class="FeaturesContent">
+                <div class="Feature1">
+                    <div class="FeatureInfo">
+                        Add and edit camera paths
+                    </div>
+                </div>
+                <div class="Feature2" >
+                    <div class="FeatureInfo">
+                        Mouse picking to detect and for Object transformation controls with movement, scaling and rotation settings..
+                    </div>
+                </div>
+                <div class="Feature3" >
+                    <div class="FeatureInfo">
+                        Object Infographics
+                    </div>
+                </div>
+                <div class="Feature4" >
+                    <div class="FeatureInfo">
+                        Splat Rendering
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="SceneContainer">
+                <div>Scenes</div>
+                <!-- Full-width images with number and caption text -->
+                <div class="Scenes">
+                    <div class="Scene" onclick="gotoeditor('src/editor.html')">
+                        <div class="sceneInfo">Caption Text</div>
+                        <img src="images/Nepal.png" style="width:100%">
+                    </div>
+                  
+                    <div class="Scene" onclick="gotoeditor('src/editor.html')">
+                        <div class="sceneInfo">Caption Two</div>
+                        <img src="images/Nepal.png" style="width:100%">
+                    </div>
+            
+                    <!-- Next and previous buttons -->
+                    <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                    <a class="next" onclick="plusSlides(1)">&#10095;</a>
+                </div>
+                <div style="text-align:center">
+                    <span class="dot" onclick="currentSlide(1)"></span>
+                    <span class="dot" onclick="currentSlide(2)"></span>
+                </div>
+              
+        </div>
+        <div id="Scope" class="Scope">
           <div>Scope<br/></div>
           <div class="ScopeContent">
-            <div class="Scope1" ></div>
-            <div class="Scope2" ></div>
-            <div class="Scope3" ></div>
+            <div class="Scope1" >
+                <div class="ScopeInfo">
+                    Platform for users to load, edit, and view 3D renders created using 2D images or videos
+                </div>
+            </div>
+            <div class="Scope2" >
+                <div class="ScopeInfo">
+                    Platform to create and view exhibitions in the virtual space
+                </div>
+            </div>
           </div>
         </div>
         <div class="AboutUs">
           <div>About us</div>
           <div class="AboutusContent">
             <div class="ContactInfo">
-                <div class="Ellipse"></div>
-                <div class="Abc">ABC</div>
+                <img class ="profileImg" src="images/Nisan.jpg" width="250px"  height="250px"/>
+                <div class="Abc">Nisan Shrestha
+                    <div class="ContactIcon">
+                        <a href="https://www.facebook.com/Nisanxtha" target="_blank"><img src="images/facebook.png" width="30" height="30"></a>   
+                        <a href="https://github.com/Nisan-Shrestha" target="_blank"><img src="images/github.png" width="30" height="30"></a> 
+                    </div>
+                </div>
             </div>
             <div class="ContactInfo">
-                <div class="Ellipse"></div>
-                <div class="Abc">ABC</div>
+                <img class="profileImg" src="images/Prabigya.jpg" width="250px"  height="250px"/>
+                <div class="Abc">Prabigya Acharya
+                    <div class="ContactIcon">
+                        <a href="https://www.facebook.com/prabigya.acharya.9" target="_blank"><img src="images/facebook.png" width="30" height="30"></a>   
+                        <a href="https://github.com/PrabigyaAcharya" target="_blank"><img src="images/github.png" width="30" height="30"></a> 
+                    </div>
+                </div>
             </div>
             <div class="ContactInfo">
-                <div class="Ellipse"></div>
-                <div class="Abc">ABC</div>
+                <img class="profileImg" src="images/Pramish.jpg" width="250px"  height="250px"/>
+                <div class="Abc">Pramish Aryal
+                    <div class="ContactIcon">
+                        <a href="https://www.facebook.com/ar.pramish" target="_blank"><img src="images/facebook.png" width="30" height="30"></a>   
+                        <a href="https://github.com/Pramish-Aryal" target="_blank"><img src="images/github.png" width="30" height="30"></a> 
+                    </div>
+                </div>
             </div>
             <div class="ContactInfo">
-                <div class="Ellipse"></div>
-                <div class="Abc">ABC</div>
+                <img class="profileImg" src="images/Pranab.jpg" width="250px"  height="250px"/>
+                <div class="Abc">Pranab Ratna Gubhaju
+                    <div class="ContactIcon">
+                    <a href="https://www.facebook.com/shresprbn" target="_blank"><img src="images/facebook.png" width="30" height="30"></a>   
+                    <a href="https://github.com/Pranab-Ratna-Gubhaju" target="_blank"><img src="images/github.png" width="30" height="30"></a> 
+                    </div>
+                </div>
             </div>
           </div>
          
           
         </div>
-        <div class="Footer"> Footer</div>
+        <div class="Footer">Copyright © 2024 3Drishya - All Rights Reserved.</div>
     
 </body>
-    <!-- <script type="module" src="/src/test.js"></script> -->
+<script src="main.js"></script>
 </html>
