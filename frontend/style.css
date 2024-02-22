@@ -142,44 +142,40 @@ a{
 
 .FeaturesContent {
     display: flex;
-    gap: 25px; 
+    gap: 30px; 
     justify-content: center;
     flex-wrap: wrap;
-    padding: 50px;
 }
 .Feature1,.Feature2,.Feature3,.Feature4{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     width: 550px; 
     height: 225px;
-    padding: 10px;
-    background: linear-gradient(180deg, #ECEDE9 0%, #CDCECA 100%);
+    padding: 40px;
+    /* background: linear-gradient(180deg, #ECEDE9 0%, #CDCECA 100%);
     box-shadow: 0px 5px 4px rgba(0, 0, 0, 0.25); 
     border-radius: 25px; 
-    border: 1px black solid
+    border: 1px black solid */
 }
 
-.Feature1{
+/* .Feature1{
     background-image: url("images/editor/camera.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
-}
-.Feature2{
+} */
+/* .Feature2{
     background-image: url("images/editor/object.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
- }
- .Feature3{
+ } */
+ /* .Feature3{
     background-image: url("images/editor/text.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
- }
- .Feature4{
+ } */
+ /* .Feature4{
     background-image: url("images/editor/mesh.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
- }
+ } */
 
 .FeatureInfo{
     width: 100%;
@@ -187,11 +183,16 @@ a{
     color: black; 
     font-size: 20px; 
     font-family: Helvetica; 
-    font-weight: 700;
+    font-weight: 200;
     margin-top: auto;
-    border-radius: 10px; 
+    padding: 10px;
+    /* border-radius: 10px; 
     border: 1px black solid;
-    background-color: white;
+    background-color: white; */
+}
+
+.FeatureImg{
+    border-radius: 25px; 
 }
 
 .SceneContainer {
@@ -287,20 +288,23 @@ a{
 }
 
 .Scope1,.Scope2{
-    display: flex;
-    flex-direction: column; 
+    /* display: flex;
+    flex-direction: column;  */
     height: 200px;
     width: 40vw; 
-    background: linear-gradient(90deg, #D1D2CE 0%, #EBEDE8 100%); 
-    box-shadow: 0px 5px 4px rgba(0, 0, 0, 0.25); 
-    border-radius: 25px; 
+    /* background: linear-gradient(90deg, #D1D2CE 0%, #EBEDE8 100%); 
+    box-shadow: 0px 5px 4px rgba(0, 0, 0, 0.25);  */
+    /* border-radius: 25px; 
     border: 1px black solid;
-    justify-content: center;
-    padding: 10px;
-    
+    justify-content: center; */
+    padding: 10px;    
 }
 
-.Scope1{
+.ScopeImg{
+    border-radius: 25px;
+}
+
+/* .Scope1{
     background-image: url("images/editor/meshEditor.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
@@ -310,7 +314,7 @@ a{
     background-image: url("images/editor/mesh.png");
     background-repeat: no-repeat;
     background-size: 100% 100%;
-}
+} */
 
 .ScopeInfo{
     width: 100%;
@@ -318,11 +322,12 @@ a{
     color: black; 
     font-size: 20px; 
     font-family: Helvetica; 
-    font-weight: 700;
-    margin-top: auto;
+    font-weight: 200;
+    padding: 10px;
+    /* margin-top: auto;
     border-radius: 10px; 
     border: 1px black solid;
-    background-color: white;
+    background-color: white; */
 }
 
 .AboutUs{
