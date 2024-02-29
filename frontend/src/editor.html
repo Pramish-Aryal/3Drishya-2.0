@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Editor</title>
-		<style>
-			body { margin: 0; }
-		</style>
-	</head>
-	<body>
-		<button type="button" id="saveSceneButton">Save Scene</button>
-		<button type="button" id="loadSceneButton">Load Scene</button>
-	</body>
-		<script type="module" src="/src/main.js"></script>
+
+<head>
+	<meta charset="utf-8">
+	<title>Editor</title>
+	<style>
+		body {
+			margin: 0;
+		}
+	</style>
+	<link rel="stylesheet" type="text/css" href="/src/editorstyle.css">
+	<script type="module" src="/src/main.js"></script>
+</head>
+
+<body>
+	<!-- <button type="button" id="saveSceneButton">Save Scene</button>
+		<button type="button" id="loadSceneButton">Load Scene</button> -->
+	<div id="buttonDiv">
+		<div class="insideText1">Load KSplat:<input accept=".ksplat, .splat" type="file" id="fileInput1"></div>
+		<div class="insideText2">Load Model:<input accept=".fbx, .obj" type="file" id="fileInput2"></div>
+	</div>
+</body>
+
 </html>

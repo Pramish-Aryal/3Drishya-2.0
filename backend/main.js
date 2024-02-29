@@ -7,14 +7,18 @@ app.use(cors())
 const port = 3000
 
 const fs = require('node:fs');
+const path = require('path');
+
+const directoryPath = './data/scenes/';
 
 function read_file(filename) {
-    try {
-      const data = fs.readFileSync(filename, 'utf8');
-      return data;
-    } catch (err) {
-      console.error(err);
-    }
+  try {
+    const data = fs.readFileSync(filename, 'utf8');
+    return data;
+  } catch (err) {
+    console.error(`Could not read the given file: ${filename}\nError: ${err}`);
+    return null;
+  }
 }
 
 function write_file(filename, content) {
@@ -27,17 +31,21 @@ function write_file(filename, content) {
 
 
 app.get('/readFile', (req, res) => {
-  let filename = req.query.filename
+  let filename = directoryPath + req.query.filename
   let file = read_file(filename);
-  let fileJSON = JSON.parse(file);
-  res.json(fileJSON);
+  if (file) {
+    let fileJSON = JSON.parse(file);
+    res.json(fileJSON);
+  } else {
+    res.status(500).json({ success: false, message: 'Could not find the specified file' });
+  }
 })
 
 app.post('/postFile', (req, res) => {
   try {
     const receivedData = req.body;
 
-    
+
     write_file("./a.json", JSON.stringify(receivedData));
 
     // Process the received JSON data as needed
@@ -49,6 +57,37 @@ app.post('/postFile', (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
+
+
+// Function to get the list of files in a directory
+function getFilesInDirectory(directoryPath) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(directoryPath, (err, files) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(files);
+      }
+    });
+  });
+}
+
+
+app.get('/queryFiles', (req, res) => {
+  // Specify the path to the directory you want to scan
+
+  // Call the function to get the list of files
+  getFilesInDirectory(directoryPath)
+    .then(files => {
+      // Send the list of files as a JSON response
+      res.json({ files });
+    })
+    .catch(err => {
+      console.error("Error reading directory:", err);
+      // Send an error response if something went wrong
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
+})
 
 
 app.listen(port, () => {

@@ -1,0 +1,17 @@
+#buttonDiv {
+    position: relative;
+}
+
+.insideText1 {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    color: white;
+}
+
+.insideText2 {
+    position: absolute;
+    left: 500px;
+    top: 20px;
+    color: white;
+}

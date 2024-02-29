@@ -5,7 +5,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mkkellogg/gaussian-splats-3d": "^0.2.2",
+    "@mkkellogg/gaussian-splats-3d": "^0.2.3",
     "three": "^0.161.0"
   },
   "devDependencies": {
