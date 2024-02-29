@@ -27,15 +27,27 @@ mouse_controls.enableZoom = true;
 
 const cubes = [] // [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0xff00ff), create_cube()];
 
-let viewer = new GaussianSplats3D.DropInViewer({
+let viewer = new GaussianSplats3D.Viewer({
     'gpuAcceleratedSort': true,
     'sharedMemoryForWorkers': false,
+
+    'dynamicScene': true, 
+    'renderer': renderer,
+    'camera': camera, 
+    'selfDrivenMode': false,
 });
 
-scene.add(viewer);
+// let viewer2 = new GaussianSplats3D.DropInViewer({
+//     'gpuAcceleratedSort': true,
+//     'sharedMemoryForWorkers': false,
+// });
+
+// scene.add(viewer);
+// scene.add(viewer2);
+
 
 function animate() {
-
+    rotatesplats();
     cubes.forEach(cube => {
         cube.rotation.x = get_angle();
         cube.rotation.y = get_angle();
@@ -47,7 +59,10 @@ function animate() {
     update_angle();
 
 
-    renderer.render(scene, camera);
+    viewer.update();
+    viewer.render();
+
+    // renderer.render(scene, camera);
 
     requestAnimationFrame(animate);
 }
@@ -71,24 +86,38 @@ function handleLoadKsplat(event) {
     // our file path is always assumed to be filePath
 
     const quaternion = new Three.Quaternion();
-    quaternion.setFromAxisAngle( new Three.Vector3( 1, 0, 0 ), Math.PI );
+    quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), Math.PI);
+
+    // viewer.addSplatScenes([{
+    //     'path': '/data/ksplats/civil bench wide.ksplat',
+    //     'splatAlphaRemovalThreshold': 20,
+    //     'position': [0, 10, 0],
+    // }
+    //     , {
+    //     'path': '/data/ksplats/civil bench.ksplat',
+    //     'rotation': quaternion.toArray(),
+    //     'scale': [0.1, 0.1, 0.1],
+    //     'position': [0, 0, 0],
+
+    // }
+    // ]);
 
     viewer.addSplatScene(filePath, {
         'splatAlphaRemovalThreshold': 5,
-        'position': [0, 10, 0],
-        'rotation': quaternion.toArray(),
+        'position': [0, 0, 0],
+        // 'rotation': quaternion.toArray(),
     }).then(data => {
-        // let index = 0;
+        let index = 0;
         // viewer.getSplatScene(index).position = new Vector3(100, 100, 100);
-        
+
         viewer.getSplatScene(index).rotation = quaternion;
-        
-        // console.log(viewer.getSplatScene(index))
 
-        // console.log("Halo my darling")
-        // viewer.getSplatScene(index).updateTransform()
+        console.log(viewer.getSplatScene(index))
 
-        // console.log(scene.children[0]);
+        console.log("Halo my darling")
+        viewer.getSplatScene(index).updateTransform()
+
+        console.log(scene.children[0]);
 
     });
     // {
@@ -98,10 +127,15 @@ function handleLoadKsplat(event) {
     //     'position': [0, -2, -1.2]
     // }
 
+    window.scene = scene
 
     console.log(scene)
 }
 
+function rotatesplats() {
+    // viewer.rotation.x += .01;
+    // viewer2.rotation.y -=.01;
+}
 function handleLoadModel(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
