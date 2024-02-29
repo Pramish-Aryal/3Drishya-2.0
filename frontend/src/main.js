@@ -30,16 +30,12 @@ const cubes = [] // [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0x
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
     'sharedMemoryForWorkers': false,
+    'dynamicScene': true
 });
 
-// let viewer2 = new GaussianSplats3D.DropInViewer({
-//     'gpuAcceleratedSort': true,
-//     'sharedMemoryForWorkers': false,
-// });
+scene.add(viewer);
 
-// scene.add(viewer);
-// scene.add(viewer2);
-
+let angle = 0;
 
 function animate() {
     rotatesplats();
@@ -50,6 +46,15 @@ function animate() {
 
     mouse_controls.update();
 
+    if (ready) {
+
+        const quaternion = new Three.Quaternion();
+        quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
+        
+        viewer.getSplatScene(0).quaternion.copy(quaternion);
+        
+        angle += Math.PI / 10;
+    }
 
     update_angle();
 
@@ -65,6 +70,7 @@ function get_url_param(key) {
     return urlParams.get(key)
 }
 
+let ready = false;
 
 function handleLoadKsplat(event) {
     const file = event.target.files[0]; // Get the selected file
@@ -78,7 +84,7 @@ function handleLoadKsplat(event) {
     // our file path is always assumed to be filePath
 
     const quaternion = new Three.Quaternion();
-    quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), Math.PI);
+    quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), Math.PI / 2);
 
     // viewer.addSplatScenes([{
     //     'path': '/data/ksplats/civil bench wide.ksplat',
@@ -99,15 +105,16 @@ function handleLoadKsplat(event) {
         'position': [0, 0, 0],
         // 'rotation': quaternion.toArray(),
     }).then(data => {
+        ready = true;
         let index = 0;
-        // viewer.getSplatScene(index).position = new Vector3(100, 100, 100);
+        // viewer.getSplatScene(index).position = new Vector3(10, 10, 10);
 
         // viewer.getSplatScene(index).rotation = quaternion;
 
         // console.log(viewer.getSplatScene(index))
 
         // console.log("Halo my darling")
-        // viewer.getSplatScene(index).updateTransform()
+        viewer.getSplatScene(index).updateTransform()
 
         // console.log(scene.children[0]);
 
