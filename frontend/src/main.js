@@ -27,14 +27,9 @@ mouse_controls.enableZoom = true;
 
 const cubes = [] // [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0xff00ff), create_cube()];
 
-let viewer = new GaussianSplats3D.Viewer({
+let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
     'sharedMemoryForWorkers': false,
-
-    'dynamicScene': true, 
-    'renderer': renderer,
-    'camera': camera, 
-    'selfDrivenMode': false,
 });
 
 // let viewer2 = new GaussianSplats3D.DropInViewer({
@@ -59,10 +54,7 @@ function animate() {
     update_angle();
 
 
-    viewer.update();
-    viewer.render();
-
-    // renderer.render(scene, camera);
+    renderer.render(scene, camera);
 
     requestAnimationFrame(animate);
 }
@@ -110,14 +102,14 @@ function handleLoadKsplat(event) {
         let index = 0;
         // viewer.getSplatScene(index).position = new Vector3(100, 100, 100);
 
-        viewer.getSplatScene(index).rotation = quaternion;
+        // viewer.getSplatScene(index).rotation = quaternion;
 
-        console.log(viewer.getSplatScene(index))
+        // console.log(viewer.getSplatScene(index))
 
-        console.log("Halo my darling")
-        viewer.getSplatScene(index).updateTransform()
+        // console.log("Halo my darling")
+        // viewer.getSplatScene(index).updateTransform()
 
-        console.log(scene.children[0]);
+        // console.log(scene.children[0]);
 
     });
     // {
