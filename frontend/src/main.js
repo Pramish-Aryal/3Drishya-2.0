@@ -18,8 +18,8 @@ const renderer = new Three.WebGLRenderer();
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-const light = new Three.AmbientLight( 0xffffff ); // soft white light
-scene.add( light );
+const light = new Three.AmbientLight(0xffffff); // soft white light
+scene.add(light);
 
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
@@ -38,6 +38,8 @@ let viewer = new GaussianSplats3D.DropInViewer({
     'sharedMemoryForWorkers': false,
     'dynamicScene': true
 });
+
+const sceneName = get_url_param('name');
 
 scene.add(viewer);
 
@@ -104,10 +106,19 @@ function handleLoadKsplat(event) {
         // viewer.getSplatScene(index).rotation = quaternion;
         //viewer.getSplatScene(index).updateTransform()
 
+        let index = addedSplats.length;
+        let splatScene = viewer.getSplatScene(index);
         let splat = {
             'path': filePath,
             'name': fileName,
+            'transform': {
+                'position': splatScene.position,
+                'rotation': splatScene.quaternion.toArray(),
+                'scale': splatScene.scale,
+            }
         }
+
+        console.log(splat)
         addedSplats.push(splat);
     });
 }
@@ -115,28 +126,30 @@ function handleLoadKsplat(event) {
 function handleLoadModel(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
-    const filePath = `/data/objs/${fileName.split('.')[0]}/${fileName}`
+    const objName = fileName.split('.')[0];
+    const filePath = `/data/objs/${objName}/${fileName}`
 
     loader.load(
         // resource URL
         filePath,
         // called when the resource is loaded
-        function ( gltf ) {
-            scene.add( gltf.scene );
-            
+        function (gltf) {
+            scene.add(gltf.scene);
+
             let obj = {
                 'path': filePath,
-                'name': fileName,
+                'name': objName,
+                'transform': {}
             }
             addedObjs.push(obj);
         },
         // called while loading is progressing
-        function ( xhr ) {
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         },
         // called when loading has errors
-        function ( error ) {
-            console.log( 'An error happened' );
+        function (error) {
+            console.log('An error happened');
         }
     );
 
@@ -147,13 +160,10 @@ function handleLoadModel(event) {
 }
 
 function main() {
-
-    const sceneName = get_url_param('name');
-
-    if (sceneName != "blank") {
-        console.log(`Loading Scene: ${sceneName}`);
-        loadScene(sceneName + ".conf");
-    }
+    // if (sceneName != "blank") {
+    //     console.log(`Loading Scene: ${sceneName}`);
+    //     loadScene(sceneName + ".conf");
+    // }
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     // document.body.appendChild(renderer.domElement);
@@ -169,34 +179,67 @@ main();
 document.getElementById('fileInput1').addEventListener('change', handleLoadKsplat);
 document.getElementById('fileInput2').addEventListener('change', handleLoadModel);
 
-// document.getElementById('saveSceneButton').addEventListener("click", saveScene);
-// document.getElementById('loadSceneButton').addEventListener("click", loadScene);
+document.getElementById('saveSceneButton').addEventListener("click", saveScene);
+document.getElementById('loadSceneButton').addEventListener("click", loadScene);
 
 function saveScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
-    let dataToSend = {
-        objects: [],
-        scene: scene.toJSON()
-    };
 
-    scene.traverse(object => {
-        if (object.toJSON && object !== scene) {
-            dataToSend.objects.push(object.toJSON());
-        }
-    });
+
+    for (let index = 0; index < addedSplats.length; ++index) {
+        let splatScene = viewer.getSplatScene(index);
+        addedSplats[index].transform = {
+            'position': splatScene.position,
+            'rotation': splatScene.quaternion.toArray(),
+            'scale': splatScene.scale.toArray(),
+        };
+    }
+
+
+    // @nisan, the objects' transform is not being saved, do it
+    // for (let index = 0; index < addedObjs.length; ++index) {
+
+    //     addedObjs[index].transform = {
+    //         'position': object.position,
+    //         'rotation': object.quaternion,
+    //         'scale': object.scale,
+    //     };
+    // }
+
+    let dataToSend = {
+        objects: addedObjs,
+        ksplats: addedSplats,
+    };
 
     console.log(dataToSend);
 
-    fetch('http://localhost:3000/postFile', {
+    fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=UTF-8' },
         body: JSON.stringify(dataToSend)
-    }).then(res => { });
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('JSON data saved successfully:', data)
+            console.log('JSON data saved successfully:', data);
+        })
+        .catch(error => {
+            alert('There was a problem saving the JSON data:', error)
+            console.error('There was a problem saving the JSON data:', error);
+        });
 }
 
-function loadScene(sceneName) {
+function loadScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
-    fetch(`http://localhost:3000/readFile?filename=${sceneName}`).then(response => {
+    addedObjs = []
+    addedSplats = []
+
+    fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
         if (!response.ok) {
             return response.json().then(res => { throw new Error(res.message) });
         }
@@ -204,16 +247,40 @@ function loadScene(sceneName) {
     })
         .then(data => {
 
-            console.log('Loading Scene:', data);
+            console.log(data);
 
-            const loader = new Three.ObjectLoader();
-            const sceneObj = loader.parse(data.scene);
-            scene.copy(sceneObj, false);
+            data.ksplats.forEach(splat => {
+                viewer.addSplatScene(splat.path, {
+                    'splatAlphaRemovalThreshold': 5,
+                    'position': splat.transform.position,
+                    'rotation': splat.transform.rotation,
+                    'scale': splat.transform.scale,
+                }).then(data => {
+                });
+            });
 
+            addedObjs = data.objects
+            addedSplats = data.ksplats
+            // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
             // Rebuild objects
-            data.objects.forEach(objectData => {
-                const obj = loader.parse(objectData);
-                scene.add(obj);
+            data.objects.forEach(obj => {
+                loader.load(
+                    // resource URL
+                    obj.path,
+                    // called when the resource is loaded
+                    function (gltf) {
+                        scene.add(gltf.scene);
+                        // @nisan probably do something here
+                    },
+                    // called while loading is progressing
+                    function (xhr) {
+                        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                    },
+                    // called when loading has errors
+                    function (error) {
+                        console.log('An error happened');
+                    }
+                );
             });
 
 

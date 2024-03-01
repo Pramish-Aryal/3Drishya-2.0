@@ -44,9 +44,11 @@ app.get('/readFile', (req, res) => {
 app.post('/postFile', (req, res) => {
   try {
     const receivedData = req.body;
+    let filename = directoryPath + req.query.filename
 
+    console.log(filename)
 
-    write_file("./a.json", JSON.stringify(receivedData));
+    write_file(filename, JSON.stringify(receivedData));
 
     // Process the received JSON data as needed
     // Example: Save to a database, perform calculations, etc.
