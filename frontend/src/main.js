@@ -117,18 +117,18 @@ function handleLoadModel(event) {
     const fileName = file.name; // Get the file name
     const filePath = `/data/objs/${fileName.split('.')[0]}/${fileName}`
 
-    console.log(filePath)
-
     loader.load(
         // resource URL
         filePath,
         // called when the resource is loaded
         function ( gltf ) {
             scene.add( gltf.scene );
-            gltf.scene; // THREE.Group
-            gltf.scenes; // Array<THREE.Group>
-            gltf.cameras; // Array<THREE.Camera>
-            gltf.asset; // Object
+            
+            let obj = {
+                'path': filePath,
+                'name': fileName,
+            }
+            addedObjs.push(obj);
         },
         // called while loading is progressing
         function ( xhr ) {
