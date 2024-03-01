@@ -9,12 +9,17 @@ import { create_cube } from './geometry_generator.js';
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
+const loader = new GLTFLoader();
 const renderer = new Three.WebGLRenderer();
-
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const light = new Three.AmbientLight( 0xffffff ); // soft white light
+scene.add( light );
 
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
@@ -25,7 +30,8 @@ mouse_controls.enableDamping = true;
 mouse_controls.enablePan = true;
 mouse_controls.enableZoom = true;
 
-const cubes = [] // [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0xff00ff), create_cube()];
+let addedSplats = [] // path array of splats
+let addedObjs = [] // path array of objects
 
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
@@ -35,26 +41,16 @@ let viewer = new GaussianSplats3D.DropInViewer({
 
 scene.add(viewer);
 
-let angle = 0;
-
 function animate() {
-    rotatesplats();
-    cubes.forEach(cube => {
-        cube.rotation.x = get_angle();
-        cube.rotation.y = get_angle();
-    });
 
     mouse_controls.update();
 
-    if (ready) {
+    // const quaternion = new Three.Quaternion();
+    // quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
 
-        const quaternion = new Three.Quaternion();
-        quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
-        
-        viewer.getSplatScene(0).quaternion.copy(quaternion);
-        
-        angle += Math.PI / 10;
-    }
+    // viewer.getSplatScene(0).quaternion.copy(quaternion);
+
+    // angle += Math.PI / 10;
 
     update_angle();
 
@@ -70,8 +66,6 @@ function get_url_param(key) {
     return urlParams.get(key)
 }
 
-let ready = false;
-
 function handleLoadKsplat(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
@@ -84,7 +78,7 @@ function handleLoadKsplat(event) {
     // our file path is always assumed to be filePath
 
     const quaternion = new Three.Quaternion();
-    quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), Math.PI / 2);
+    quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), Math.PI);
 
     // viewer.addSplatScenes([{
     //     'path': '/data/ksplats/civil bench wide.ksplat',
@@ -103,42 +97,49 @@ function handleLoadKsplat(event) {
     viewer.addSplatScene(filePath, {
         'splatAlphaRemovalThreshold': 5,
         'position': [0, 0, 0],
-        // 'rotation': quaternion.toArray(),
+        'rotation': quaternion.toArray(),
     }).then(data => {
-        ready = true;
-        let index = 0;
+        //let index = 0;
         // viewer.getSplatScene(index).position = new Vector3(10, 10, 10);
-
         // viewer.getSplatScene(index).rotation = quaternion;
+        //viewer.getSplatScene(index).updateTransform()
 
-        // console.log(viewer.getSplatScene(index))
-
-        // console.log("Halo my darling")
-        viewer.getSplatScene(index).updateTransform()
-
-        // console.log(scene.children[0]);
-
+        let splat = {
+            'path': filePath,
+            'name': fileName,
+        }
+        addedSplats.push(splat);
     });
-    // {
-    //     'path': '<path to .ply, .ksplat, or .splat file>',
-    //     'rotation': [0, -0.857, -0.514495, 6.123233995736766e-17],
-    //     'scale': [1.5, 1.5, 1.5],
-    //     'position': [0, -2, -1.2]
-    // }
-
-    window.scene = scene
-
-    console.log(scene)
 }
 
-function rotatesplats() {
-    // viewer.rotation.x += .01;
-    // viewer2.rotation.y -=.01;
-}
 function handleLoadModel(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
-    const filePath = URL.createObjectURL(file); // Get the file path
+    const filePath = `/data/objs/${fileName.split('.')[0]}/${fileName}`
+
+    console.log(filePath)
+
+    loader.load(
+        // resource URL
+        filePath,
+        // called when the resource is loaded
+        function ( gltf ) {
+            scene.add( gltf.scene );
+            gltf.scene; // THREE.Group
+            gltf.scenes; // Array<THREE.Group>
+            gltf.cameras; // Array<THREE.Camera>
+            gltf.asset; // Object
+        },
+        // called while loading is progressing
+        function ( xhr ) {
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        },
+        // called when loading has errors
+        function ( error ) {
+            console.log( 'An error happened' );
+        }
+    );
+
 
     // Do something with the file name and path
     console.log("Model File name:", fileName);
@@ -156,9 +157,7 @@ function main() {
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     // document.body.appendChild(renderer.domElement);
-    cubes.forEach(cube => {
-        scene.add(cube);
-    });
+
     camera.position.z = 5;
     animate();
 }
