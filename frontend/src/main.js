@@ -39,7 +39,7 @@ let viewer = new GaussianSplats3D.DropInViewer({
     'dynamicScene': true
 });
 
-const sceneName = get_url_param('name');
+// const sceneName = get_url_param('name');
 
 // scene.add(viewer);
 // scene.add(viewer2);

@@ -7,7 +7,7 @@ function scrollToSection(sectionId) {
   }
 }
 
-function gotoeditor(path){
+function gotoviewer(path){
   window.location.href = path;
 }
 
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         sceneDiv.className = 'Scene';
         fileName = fileName.replace('.conf', '')
         sceneDiv.onclick = function () {
-          gotoeditor(`src/viewer.html?scene=${fileName}`);
+          gotoviewer(`src/viewer.html?scene=${fileName}`);
         };
 
         const sceneInfoDiv = document.createElement('div');

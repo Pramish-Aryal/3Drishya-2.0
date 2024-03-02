@@ -10,6 +10,7 @@ camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
 
 let sceneName = null
+
 // document.addEventListener('DOMContentLoaded', function () {
 //     // Get the value of the 'scene' parameter from the URL
 //     const urlParams = new URLSearchParams(window.location.search);
@@ -33,9 +34,18 @@ function get_url_param(key) {
     return urlParams.get(key)
 }
 
+
+
 function gotoeditor(sceneName){
     window.location.href = `editor.html?scene=${sceneName}`;
   }
+
+  const gotoEditorButton = document.getElementById('gotoEditorButton');
+  if (gotoEditorButton) {
+      gotoEditorButton.addEventListener('click', function () {
+          gotoeditor(sceneName);
+      });
+  } 
 
   function animate() {
     // rotatesplats();
