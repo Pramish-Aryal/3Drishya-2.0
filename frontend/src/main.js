@@ -39,7 +39,7 @@ let viewer = new GaussianSplats3D.DropInViewer({
 
 // scene.add(viewer);
 // scene.add(viewer2);
-
+let sceneName
 
 function animate() {
     rotatesplats();
@@ -140,7 +140,7 @@ function handleLoadModel(event) {
 
 function main() {
 
-    const sceneName = get_url_param('name');
+    sceneName = get_url_param('scene');
 
     if (sceneName != "blank") {
         console.log(`Loading Scene: ${sceneName}`);
@@ -217,3 +217,4 @@ function loadScene(sceneName) {
         });
 
 }
+
