@@ -9,12 +9,17 @@ import { create_cube } from './geometry_generator.js';
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
+const loader = new GLTFLoader();
 const renderer = new Three.WebGLRenderer();
-
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const light = new Three.AmbientLight(0xffffff); // soft white light
+scene.add(light);
 
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
@@ -25,31 +30,31 @@ mouse_controls.enableDamping = true;
 mouse_controls.enablePan = true;
 mouse_controls.enableZoom = true;
 
-const cubes = [] // [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0xff00ff), create_cube()];
+let addedSplats = [] // path array of splats
+let addedObjs = [] // path array of objects
 
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
     'sharedMemoryForWorkers': false,
+    'dynamicScene': true
 });
 
-// let viewer2 = new GaussianSplats3D.DropInViewer({
-//     'gpuAcceleratedSort': true,
-//     'sharedMemoryForWorkers': false,
-// });
+const sceneName = get_url_param('name');
 
 // scene.add(viewer);
 // scene.add(viewer2);
 let sceneName
 
 function animate() {
-    rotatesplats();
-    cubes.forEach(cube => {
-        cube.rotation.x = get_angle();
-        cube.rotation.y = get_angle();
-    });
 
     mouse_controls.update();
 
+    // const quaternion = new Three.Quaternion();
+    // quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
+
+    // viewer.getSplatScene(0).quaternion.copy(quaternion);
+
+    // angle += Math.PI / 10;
 
     update_angle();
 
@@ -64,7 +69,6 @@ function get_url_param(key) {
     const urlParams = new URLSearchParams(queryString);
     return urlParams.get(key)
 }
-
 
 function handleLoadKsplat(event) {
     const file = event.target.files[0]; // Get the selected file
@@ -97,41 +101,60 @@ function handleLoadKsplat(event) {
     viewer.addSplatScene(filePath, {
         'splatAlphaRemovalThreshold': 5,
         'position': [0, 0, 0],
-        // 'rotation': quaternion.toArray(),
+        'rotation': quaternion.toArray(),
     }).then(data => {
-        let index = 0;
-        // viewer.getSplatScene(index).position = new Vector3(100, 100, 100);
-
+        //let index = 0;
+        // viewer.getSplatScene(index).position = new Vector3(10, 10, 10);
         // viewer.getSplatScene(index).rotation = quaternion;
+        //viewer.getSplatScene(index).updateTransform()
 
-        // console.log(viewer.getSplatScene(index))
+        let index = addedSplats.length;
+        let splatScene = viewer.getSplatScene(index);
+        let splat = {
+            'path': filePath,
+            'name': fileName,
+            'transform': {
+                'position': splatScene.position,
+                'rotation': splatScene.quaternion.toArray(),
+                'scale': splatScene.scale,
+            }
+        }
 
-        // console.log("Halo my darling")
-        // viewer.getSplatScene(index).updateTransform()
-
-        // console.log(scene.children[0]);
-
+        console.log(splat)
+        addedSplats.push(splat);
     });
-    // {
-    //     'path': '<path to .ply, .ksplat, or .splat file>',
-    //     'rotation': [0, -0.857, -0.514495, 6.123233995736766e-17],
-    //     'scale': [1.5, 1.5, 1.5],
-    //     'position': [0, -2, -1.2]
-    // }
-
-    window.scene = scene
-
-    console.log(scene)
 }
 
-function rotatesplats() {
-    // viewer.rotation.x += .01;
-    // viewer2.rotation.y -=.01;
-}
 function handleLoadModel(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
-    const filePath = URL.createObjectURL(file); // Get the file path
+    const objName = fileName.split('.')[0];
+    const filePath = `/data/objs/${objName}/${fileName}`
+
+    loader.load(
+        // resource URL
+        filePath,
+        // called when the resource is loaded
+        function (gltf) {
+            scene.add(gltf.scene);
+
+            let obj = {
+                'path': filePath,
+                'name': objName,
+                'transform': {}
+            }
+            addedObjs.push(obj);
+        },
+        // called while loading is progressing
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+        // called when loading has errors
+        function (error) {
+            console.log('An error happened');
+        }
+    );
+
 
     // Do something with the file name and path
     console.log("Model File name:", fileName);
@@ -149,9 +172,7 @@ function main() {
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     // document.body.appendChild(renderer.domElement);
-    cubes.forEach(cube => {
-        scene.add(cube);
-    });
+
     camera.position.z = 5;
     animate();
 }
@@ -163,34 +184,67 @@ main();
 document.getElementById('fileInput1').addEventListener('change', handleLoadKsplat);
 document.getElementById('fileInput2').addEventListener('change', handleLoadModel);
 
-// document.getElementById('saveSceneButton').addEventListener("click", saveScene);
-// document.getElementById('loadSceneButton').addEventListener("click", loadScene);
+document.getElementById('saveSceneButton').addEventListener("click", saveScene);
+document.getElementById('loadSceneButton').addEventListener("click", loadScene);
 
 function saveScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
-    let dataToSend = {
-        objects: [],
-        scene: scene.toJSON()
-    };
 
-    scene.traverse(object => {
-        if (object.toJSON && object !== scene) {
-            dataToSend.objects.push(object.toJSON());
-        }
-    });
+
+    for (let index = 0; index < addedSplats.length; ++index) {
+        let splatScene = viewer.getSplatScene(index);
+        addedSplats[index].transform = {
+            'position': splatScene.position,
+            'rotation': splatScene.quaternion.toArray(),
+            'scale': splatScene.scale.toArray(),
+        };
+    }
+
+
+    // @nisan, the objects' transform is not being saved, do it
+    // for (let index = 0; index < addedObjs.length; ++index) {
+
+    //     addedObjs[index].transform = {
+    //         'position': object.position,
+    //         'rotation': object.quaternion,
+    //         'scale': object.scale,
+    //     };
+    // }
+
+    let dataToSend = {
+        objects: addedObjs,
+        ksplats: addedSplats,
+    };
 
     console.log(dataToSend);
 
-    fetch('http://localhost:3000/postFile', {
+    fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=UTF-8' },
         body: JSON.stringify(dataToSend)
-    }).then(res => { });
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('JSON data saved successfully:', data)
+            console.log('JSON data saved successfully:', data);
+        })
+        .catch(error => {
+            alert('There was a problem saving the JSON data:', error)
+            console.error('There was a problem saving the JSON data:', error);
+        });
 }
 
-function loadScene(sceneName) {
+function loadScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
-    fetch(`http://localhost:3000/readFile?filename=${sceneName}`).then(response => {
+    addedObjs = []
+    addedSplats = []
+
+    fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
         if (!response.ok) {
             return response.json().then(res => { throw new Error(res.message) });
         }
@@ -198,16 +252,40 @@ function loadScene(sceneName) {
     })
         .then(data => {
 
-            console.log('Loading Scene:', data);
+            console.log(data);
 
-            const loader = new Three.ObjectLoader();
-            const sceneObj = loader.parse(data.scene);
-            scene.copy(sceneObj, false);
+            data.ksplats.forEach(splat => {
+                viewer.addSplatScene(splat.path, {
+                    'splatAlphaRemovalThreshold': 5,
+                    'position': splat.transform.position,
+                    'rotation': splat.transform.rotation,
+                    'scale': splat.transform.scale,
+                }).then(data => {
+                });
+            });
 
+            addedObjs = data.objects
+            addedSplats = data.ksplats
+            // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
             // Rebuild objects
-            data.objects.forEach(objectData => {
-                const obj = loader.parse(objectData);
-                scene.add(obj);
+            data.objects.forEach(obj => {
+                loader.load(
+                    // resource URL
+                    obj.path,
+                    // called when the resource is loaded
+                    function (gltf) {
+                        scene.add(gltf.scene);
+                        // @nisan probably do something here
+                    },
+                    // called while loading is progressing
+                    function (xhr) {
+                        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                    },
+                    // called when loading has errors
+                    function (error) {
+                        console.log('An error happened');
+                    }
+                );
             });
 
 

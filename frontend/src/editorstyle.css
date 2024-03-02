@@ -15,3 +15,17 @@
     top: 20px;
     color: white;
 }
+
+.insideText3 {
+    position: absolute;
+    right: 50px;
+    top: 20px;
+    color: white;
+}
+
+.insideText4 {
+    position: absolute;
+    right: 200px;
+    top: 20px;
+    color: white;
+}
