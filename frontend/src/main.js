@@ -41,7 +41,8 @@ let viewer = new GaussianSplats3D.DropInViewer({
 
 // const sceneName = get_url_param('name');
 
-// scene.add(viewer);
+scene.add(viewer);
+
 // scene.add(viewer2);
 let sceneName
 
@@ -75,7 +76,7 @@ function handleLoadKsplat(event) {
     const fileName = file.name; // Get the file name
     // const filePath = URL.createObjectURL(file); // Get the file path
     const filePath = `/data/ksplats/${fileName}`
-    // Do something with the file name and path
+        // Do something with the file name and path
     console.log("Ksplat File name:", fileName);
     console.log("Ksplat File path:", filePath);
 
@@ -135,7 +136,7 @@ function handleLoadModel(event) {
         // resource URL
         filePath,
         // called when the resource is loaded
-        function (gltf) {
+        function(gltf) {
             scene.add(gltf.scene);
 
             let obj = {
@@ -146,11 +147,11 @@ function handleLoadModel(event) {
             addedObjs.push(obj);
         },
         // called while loading is progressing
-        function (xhr) {
+        function(xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         },
         // called when loading has errors
-        function (error) {
+        function(error) {
             console.log('An error happened');
         }
     );
@@ -219,10 +220,10 @@ function saveScene() {
     console.log(dataToSend);
 
     fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-        body: JSON.stringify(dataToSend)
-    })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            body: JSON.stringify(dataToSend)
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -245,11 +246,11 @@ function loadScene() {
     addedSplats = []
 
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
-        if (!response.ok) {
-            return response.json().then(res => { throw new Error(res.message) });
-        }
-        return response.json();
-    })
+            if (!response.ok) {
+                return response.json().then(res => { throw new Error(res.message) });
+            }
+            return response.json();
+        })
         .then(data => {
 
             console.log(data);
@@ -260,29 +261,28 @@ function loadScene() {
                     'position': splat.transform.position,
                     'rotation': splat.transform.rotation,
                     'scale': splat.transform.scale,
-                }).then(data => {
-                });
+                }).then(data => {});
             });
 
             addedObjs = data.objects
             addedSplats = data.ksplats
-            // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
-            // Rebuild objects
+                // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
+                // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
                     // resource URL
                     obj.path,
                     // called when the resource is loaded
-                    function (gltf) {
+                    function(gltf) {
                         scene.add(gltf.scene);
                         // @nisan probably do something here
                     },
                     // called while loading is progressing
-                    function (xhr) {
+                    function(xhr) {
                         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                     },
                     // called when loading has errors
-                    function (error) {
+                    function(error) {
                         console.log('An error happened');
                     }
                 );
@@ -295,4 +295,3 @@ function loadScene() {
         });
 
 }
-
