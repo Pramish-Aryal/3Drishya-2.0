@@ -42,8 +42,9 @@ let viewer = new GaussianSplats3D.DropInViewer({
 // const sceneName = get_url_param('name');
 
 scene.add(viewer);
-
-// scene.add(viewer2);
+window.viewer = viewer
+window.scene = scene
+    // scene.add(viewer2);
 let sceneName
 
 function animate() {
