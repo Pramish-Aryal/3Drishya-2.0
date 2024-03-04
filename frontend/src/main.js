@@ -11,6 +11,8 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
 const loader = new GLTFLoader();
@@ -30,7 +32,15 @@ mouse_controls.enableDamping = true;
 mouse_controls.enablePan = true;
 mouse_controls.enableZoom = true;
 
+//transform control
+const control = new TransformControls(camera, renderer.domElement);
+control.addEventListener('change', render_scene);
+control.addEventListener('dragging-changed', function (event) {
+    mouse_controls.enabled = !event.value;
+});
+
 let addedSplats = [] // path array of splats
+let splatsToAdd = []
 let addedObjs = [] // path array of objects
 
 let viewer = new GaussianSplats3D.DropInViewer({
@@ -40,15 +50,66 @@ let viewer = new GaussianSplats3D.DropInViewer({
 });
 
 // const sceneName = get_url_param('name');
+let sceneName = "";
 
 scene.add(viewer);
-window.viewer = viewer
-window.scene = scene
 
-// scene.add(viewer2);
-let sceneName
 
-function animate() {
+// make it so that only one object can be dragged
+window.addEventListener('click', (event) => {
+    const mouse = new Three.Vector2();
+    const raycaster = new Three.Raycaster();
+
+    // calculate mouse position in normalized device coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+    for (let i = 0; i < intersects.length; i++) {
+        let object = intersects[i].object;
+        // Check if the intersected object or its parent has the 'draggable' property
+        while (object && !object.userData['draggable']) {
+            object = object.parent;
+        }
+        if (object && object.userData['draggable']) {
+            control.attach(object);
+            break; // Only attach the first draggable object
+        }
+    }
+});
+
+
+let keyboard = [];
+
+addEventListener('keyup', (event) => {
+    keyboard[event.key] = false;
+})
+
+window.addEventListener('keydown', function (event) {
+    keyboard[event.key] = true;
+    switch (event.key.toLowerCase()) {
+        case "w": control.setMode('translate'); break;
+        case "r": control.setMode('rotate'); break;
+        case "e": control.setMode('scale'); break;
+        case "num+": control.setSize(control.size + 0.1); break;
+        case "num-": control.setSize(Math.max(control.size - 0.1, 0.1)); break;
+        case "x": control.showX = !control.showX; break;
+        case "y": control.showY = !control.showY; break;
+        case "z": control.showZ = !control.showZ; break;
+        case "escape": control.detach(); break;
+    }
+
+});
+
+function render_scene() {
+    renderer.render(scene, camera);
+}
+
+function update() {
 
     mouse_controls.update();
 
@@ -61,10 +122,9 @@ function animate() {
 
     update_angle();
 
+    render_scene();
 
-    renderer.render(scene, camera);
-
-    requestAnimationFrame(animate);
+    requestAnimationFrame(update);
 }
 
 function get_url_param(key) {
@@ -78,7 +138,7 @@ function handleLoadKsplat(event) {
     const fileName = file.name; // Get the file name
     // const filePath = URL.createObjectURL(file); // Get the file path
     const filePath = `/data/ksplats/${fileName}`
-        // Do something with the file name and path
+    // Do something with the file name and path
     console.log("Ksplat File name:", fileName);
     console.log("Ksplat File path:", filePath);
 
@@ -139,7 +199,8 @@ function handleLoadModel(event) {
         // resource URL
         filePath,
         // called when the resource is loaded
-        function(gltf) {
+        function (gltf) {
+            gltf.scene.userData['draggable'] = true;
             scene.add(gltf.scene);
 
             let obj = {
@@ -151,11 +212,11 @@ function handleLoadModel(event) {
             addedObjs.push(obj);
         },
         // called while loading is progressing
-        function(xhr) {
+        function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         },
         // called when loading has errors
-        function(error) {
+        function (error) {
             console.log('An error happened');
         }
     );
@@ -170,16 +231,16 @@ function main() {
 
     sceneName = get_url_param('scene');
 
-    if (sceneName != "blank") {
-        console.log(`Loading Scene: ${sceneName}`);
-        loadScene(sceneName + ".conf");
-    }
+    // if (sceneName != "blank") {
+    //     console.log(`Loading Scene: ${sceneName}`);
+    //     loadScene(sceneName + ".conf");
+    // }
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     // document.body.appendChild(renderer.domElement);
 
     camera.position.z = 5;
-    animate();
+    update();
 }
 
 main();
@@ -229,10 +290,10 @@ function saveScene() {
     console.log("Sending data to save:", dataToSend);
 
     fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            body: JSON.stringify(dataToSend)
-        })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify(dataToSend)
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -258,11 +319,11 @@ function loadScene() {
         scene.remove(scene.children.pop());
     }
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
-            if (!response.ok) {
-                return response.json().then(res => { throw new Error(res.message) });
-            }
-            return response.json();
-        })
+        if (!response.ok) {
+            return response.json().then(res => { throw new Error(res.message) });
+        }
+        return response.json();
+    })
         .then(data => {
             console.log(data);
             data.ksplats.forEach(splat => {
@@ -271,20 +332,20 @@ function loadScene() {
                     'position': splat.transform.position,
                     'rotation': splat.transform.rotation,
                     'scale': splat.transform.scale,
-                }).then(data => {});
+                }).then(data => { });
             });
 
             var receivedObjs = data.objects //converted to added objs in next bit of code
             addedSplats = data.ksplats
-                // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
-                // Rebuild objects
+            // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
+            // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
                     // resource URL
                     obj.path,
                     // called when the resource is loaded
-                    function(gltf) {
-
+                    function (gltf) {
+                        gltf.scene.userData['draggable'] = true;
                         scene.add(gltf.scene);
                         let tempObj = {
                             'path': obj.path,
@@ -302,11 +363,11 @@ function loadScene() {
                         // @nisan has done something here
                     },
                     // called while loading is progressing
-                    function(xhr) {
+                    function (xhr) {
                         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                     },
                     // called when loading has errors
-                    function(error) {
+                    function (error) {
                         console.log('An error happened:', error);
                     }
                 );
