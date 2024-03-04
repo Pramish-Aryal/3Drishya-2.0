@@ -44,7 +44,8 @@ let viewer = new GaussianSplats3D.DropInViewer({
 scene.add(viewer);
 window.viewer = viewer
 window.scene = scene
-    // scene.add(viewer2);
+
+// scene.add(viewer2);
 let sceneName
 
 function animate() {
@@ -194,7 +195,6 @@ document.getElementById('loadSceneButton').addEventListener("click", loadScene);
 function saveScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
 
-
     for (let index = 0; index < addedSplats.length; ++index) {
         let splatScene = viewer.getSplatScene(index);
         addedSplats[index].transform = {
@@ -207,6 +207,7 @@ function saveScene() {
     var ObjsToSave = [];
     // @nisan, the objects ' transform is not being saved, do it
     for (let index = 0; index < addedObjs.length; ++index) {
+        console.log("adding obj no:", index, addedObjs[index])
         let obj = {
             'path': addedObjs[index].path,
             'name': addedObjs[index].name,
@@ -273,7 +274,7 @@ function loadScene() {
                 }).then(data => {});
             });
 
-            addedObjs = data.objects
+            var receivedObjs = data.objects //converted to added objs in next bit of code
             addedSplats = data.ksplats
                 // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
                 // Rebuild objects
@@ -284,20 +285,21 @@ function loadScene() {
                     // called when the resource is loaded
                     function(gltf) {
 
-                        scene.add(gltf.scene).then;
-                        console.log(obj)
+                        scene.add(gltf.scene);
+                        let tempObj = {
+                            'path': obj.path,
+                            'name': obj.name,
+                            'ref': gltf.scene //remove transform and add active reference when loading scene
+                        }
+                        addedObjs.push(tempObj);
 
                         //Set Transforms from config file.
                         gltf.scene.position.set(obj.transform.position.x, obj.transform.position.y, obj.transform.position.z);
-
-                        // Set rotation (using quaternion)
-                        let quaternion = new THREE.Quaternion().fromArray(obj.transform.rotation);
+                        let quaternion = new Three.Quaternion().fromArray(obj.transform.rotation);
                         gltf.scene.setRotationFromQuaternion(quaternion);
-
-                        // Set scale
                         gltf.scene.scale.set(obj.transform.scale.x, obj.transform.scale.y, obj.transform.scale.z);
 
-                        // @nisan probably do something here
+                        // @nisan has done something here
                     },
                     // called while loading is progressing
                     function(xhr) {
@@ -310,7 +312,7 @@ function loadScene() {
                 );
             });
 
-
+            console.log(receivedObjs, " vs", addedObjs)
         })
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
