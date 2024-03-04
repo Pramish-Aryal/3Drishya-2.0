@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { MathUtils } from 'three/src/math/MathUtils.js';
+import { MathUtils, randFloat } from 'three/src/math/MathUtils.js';
 // import * as Math from 'three/src/math';
 import { Vector3 } from 'three/src/math/Vector3.js';
 
@@ -127,6 +127,7 @@ function handleLoadKsplat(event) {
     });
 }
 
+
 function handleLoadModel(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
@@ -143,7 +144,8 @@ function handleLoadModel(event) {
             let obj = {
                 'path': filePath,
                 'name': objName,
-                'transform': {}
+                'ref': gltf.scene //remove ref with transfrom when saving scene
+
             }
             addedObjs.push(obj);
         },
@@ -202,23 +204,28 @@ function saveScene() {
         };
     }
 
-
-    // @nisan, the objects' transform is not being saved, do it
-    // for (let index = 0; index < addedObjs.length; ++index) {
-
-    //     addedObjs[index].transform = {
-    //         'position': object.position,
-    //         'rotation': object.quaternion,
-    //         'scale': object.scale,
-    //     };
-    // }
+    var ObjsToSave = [];
+    // @nisan, the objects ' transform is not being saved, do it
+    for (let index = 0; index < addedObjs.length; ++index) {
+        let obj = {
+            'path': addedObjs[index].path,
+            'name': addedObjs[index].name,
+            'transform': {
+                'position': addedObjs[index].ref.position,
+                'rotation': addedObjs[index].ref.quaternion.toArray(),
+                'scale': addedObjs[index].ref.scale
+            }
+            //exchange ref with transfrom when saving scene
+        }
+        ObjsToSave.push(obj);
+    }
 
     let dataToSend = {
-        objects: addedObjs,
+        objects: ObjsToSave,
         ksplats: addedSplats,
     };
 
-    console.log(dataToSend);
+    console.log("Sending data to save:", dataToSend);
 
     fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
             method: 'POST',
@@ -246,6 +253,9 @@ function loadScene() {
     addedObjs = []
     addedSplats = []
 
+    while (scene.children.length > 2) {
+        scene.remove(scene.children.pop());
+    }
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
             if (!response.ok) {
                 return response.json().then(res => { throw new Error(res.message) });
@@ -253,9 +263,7 @@ function loadScene() {
             return response.json();
         })
         .then(data => {
-
             console.log(data);
-
             data.ksplats.forEach(splat => {
                 viewer.addSplatScene(splat.path, {
                     'splatAlphaRemovalThreshold': 5,
@@ -275,7 +283,20 @@ function loadScene() {
                     obj.path,
                     // called when the resource is loaded
                     function(gltf) {
-                        scene.add(gltf.scene);
+
+                        scene.add(gltf.scene).then;
+                        console.log(obj)
+
+                        //Set Transforms from config file.
+                        gltf.scene.position.set(obj.transform.position.x, obj.transform.position.y, obj.transform.position.z);
+
+                        // Set rotation (using quaternion)
+                        let quaternion = new THREE.Quaternion().fromArray(obj.transform.rotation);
+                        gltf.scene.setRotationFromQuaternion(quaternion);
+
+                        // Set scale
+                        gltf.scene.scale.set(obj.transform.scale.x, obj.transform.scale.y, obj.transform.scale.z);
+
                         // @nisan probably do something here
                     },
                     // called while loading is progressing
@@ -284,7 +305,7 @@ function loadScene() {
                     },
                     // called when loading has errors
                     function(error) {
-                        console.log('An error happened');
+                        console.log('An error happened:', error);
                     }
                 );
             });
