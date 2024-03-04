@@ -38,6 +38,7 @@ control.addEventListener('change', render_scene);
 control.addEventListener('dragging-changed', function (event) {
     mouse_controls.enabled = !event.value;
 });
+scene.add(control);
 
 let addedSplats = [] // path array of splats
 let splatsToAdd = []
@@ -53,7 +54,6 @@ let viewer = new GaussianSplats3D.DropInViewer({
 let sceneName = "";
 
 scene.add(viewer);
-
 
 // make it so that only one object can be dragged
 window.addEventListener('click', (event) => {
