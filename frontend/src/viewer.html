@@ -4,22 +4,19 @@
 <head>
 	<meta charset="utf-8">
 	<title>Editor</title>
-	<style>
-		body {
-			margin: 0;
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="/src/viewerstyle.css">
+	<script type="module" src="viewer.js"></script>
 </head>
 
 <body>
 	<!-- <button type="button" id="saveSceneButton">Save Scene</button>
 		<button type="button" id="loadSceneButton">Load Scene</button> -->
-	<h1>
-        Viewer
-    </h1>
-    <!-- <button onclick=loadScene(sceneName)>Load Scene </button> -->
-    <button id="gotoEditorButton">Go to Editor</button>
-    <script type="module" src="viewer.js"></script>
+	<div id="viewer-control">
+		<h1>Viewer</h1>
+		<button id="gotoEditorButton">Go to Editor</button>
+	</div>
+	<canvas id="viewer-canvas"></canvas>
+    
 </body>
 
 </html>

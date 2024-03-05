@@ -1,0 +1,14 @@
+body,
+html {
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+#viewer-control{
+    position: absolute;
+}
+
+h1{
+    color: white;;
+}

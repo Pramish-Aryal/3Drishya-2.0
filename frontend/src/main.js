@@ -55,8 +55,8 @@ control.addEventListener('change', render_scene);
 control.addEventListener('dragging-changed', function (event) {
     mouse_controls.enabled = !event.value;
 });
-scene.add(control);
-scene.add(control)
+// scene.add(control);
+
 
 let addedSplats = [] // path array of splats
 let splatsToAdd = []
@@ -113,6 +113,8 @@ canvas.addEventListener('mousedown', (event) => {
             } else if(event.button === 2){
                 objectInfo.style.display = "grid";
                 displayObjectInfo(object);
+            }else if(event.button == 1){
+                
             }
             break; // Only attach the first draggable object
         }
@@ -120,39 +122,39 @@ canvas.addEventListener('mousedown', (event) => {
 });
 
 
-canvas.addEventListener('mousemove', (event) => {
-    const mouse = new Three.Vector2();
-    const raycaster = new Three.Raycaster();
+// canvas.addEventListener('mousemove', (event) => {
+//     const mouse = new Three.Vector2();
+//     const raycaster = new Three.Raycaster();
 
-    // calculate mouse position in normalized device coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+//     // calculate mouse position in normalized device coordinates
+//     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+//     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera);
+//     // update the picking ray with the camera and mouse position
+//     raycaster.setFromCamera(mouse, camera);
 
-    // calculate objects intersecting the picking ray
-    let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
-    for (let i = 0; i < intersects.length; i++) {
-        let object = intersects[i].object;
-        // Check if the intersected object or its parent has the 'draggable' property
-        while (object && !object.userData['draggable']) {
-            object = object.parent;
-        }
-        if (object && object.userData['draggable'] && object.userData['title']) {
+//     // calculate objects intersecting the picking ray
+//     let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+//     for (let i = 0; i < intersects.length; i++) {
+//         let object = intersects[i].object;
+//         // Check if the intersected object or its parent has the 'draggable' property
+//         while (object && !object.userData['draggable']) {
+//             object = object.parent;
+//         }
+//         if (object && object.userData['draggable'] && object.userData['title']) {
             
-            object.add(labelObject);
-            labelDiv.textContent =  object.userData.title
-            labelObject.visible = true
+//             object.add(labelObject);
+//             labelDiv.textContent =  object.userData.title
+//             labelObject.visible = true
 
-            break; // Only attach the first draggable object
-        }
-        else{
-            object = null;
-            labelObject.visible = false
-        }
-    }
-});
+//             break; // Only attach the first draggable object
+//         }
+//         else{
+//             object = null;
+//             labelObject.visible = false
+//         }
+//     }
+// });
 
 
 // Overlay Scene
