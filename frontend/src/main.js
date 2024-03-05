@@ -13,19 +13,36 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
 const loader = new GLTFLoader();
-const renderer = new Three.WebGLRenderer();
+// const renderer = new Three.WebGLRenderer();
+let canvas = document.querySelector('.webgl_canvas');
+let renderer = new Three.WebGLRenderer({ canvas: canvas, antialias: true });
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const light = new Three.AmbientLight(0xffffff); // soft white light
 scene.add(light);
 
+//object-info
+let objectInfo = document.getElementById("object-info")
+let userDataContent = document.getElementById("userDataContent");
+let userDataTitle = document.getElementById("userDataTitle");
+let editTitle = document.getElementById("editTitle");
+let editContent = document.getElementById("editContent");
+let editInfoButton = document.getElementById("editInfoButton");
+let editTitleInfo = document.getElementById("editTitleInfo");
+let editContentInfo = document.getElementById("editContentInfo");
+let updateInfoButton = document.getElementById("updateInfoButton");
+let cancelInfoButton = document.getElementById("cancelInfoButton");
+let closeButton = document.getElementById("close-button");
+
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
-document.querySelector("#buttonDiv").appendChild(renderer.domElement);
+// document.querySelector("#buttonDiv").appendChild(renderer.domElement);
 
 const mouse_controls = new OrbitControls(camera, renderer.domElement);
 mouse_controls.enableDamping = true;
@@ -38,6 +55,7 @@ control.addEventListener('change', render_scene);
 control.addEventListener('dragging-changed', function (event) {
     mouse_controls.enabled = !event.value;
 });
+scene.add(control)
 
 let addedSplats = [] // path array of splats
 let splatsToAdd = []
@@ -51,12 +69,24 @@ let viewer = new GaussianSplats3D.DropInViewer({
 
 // const sceneName = get_url_param('name');
 let sceneName = "";
-
 scene.add(viewer);
+
+//text-renderer
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.pointerEvents = 'none'
+
+document.body.appendChild(labelRenderer.domElement);
+const labelDiv = document.createElement('div');
+labelDiv.className = 'label';
+const labelObject = new CSS2DObject(labelDiv);
+labelObject.visible = false
 
 
 // make it so that only one object can be dragged
-window.addEventListener('click', (event) => {
+canvas.addEventListener('mousedown', (event) => {
     const mouse = new Three.Vector2();
     const raycaster = new Three.Raycaster();
 
@@ -76,12 +106,211 @@ window.addEventListener('click', (event) => {
             object = object.parent;
         }
         if (object && object.userData['draggable']) {
-            control.attach(object);
+    
+            if(event.button === 0){
+                control.attach(object);
+            } else if(event.button === 2){
+                objectInfo.style.display = "grid";
+                displayObjectInfo(object);
+            }
             break; // Only attach the first draggable object
         }
     }
 });
 
+
+canvas.addEventListener('mousemove', (event) => {
+    const mouse = new Three.Vector2();
+    const raycaster = new Three.Raycaster();
+
+    // calculate mouse position in normalized device coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+    for (let i = 0; i < intersects.length; i++) {
+        let object = intersects[i].object;
+        // Check if the intersected object or its parent has the 'draggable' property
+        while (object && !object.userData['draggable']) {
+            object = object.parent;
+        }
+        if (object && object.userData['draggable'] && object.userData['title']) {
+            
+            object.add(labelObject);
+            labelDiv.textContent =  object.userData.title
+            labelObject.visible = true
+
+            break; // Only attach the first draggable object
+        }
+        else{
+            object = null;
+            labelObject.visible = false
+        }
+    }
+});
+
+
+// Overlay Scene
+let renderObjectModel = false
+let objectInfoControls
+let objectScene,objectCamera,objectRenderer
+
+function objectSceneInit(objects) {
+    // console.log(objects);
+    objectScene = new Three.Scene();
+    objectScene.background = new Three.Color("#ADD8E6");
+    const modelSize = document.getElementById('object-model').getBoundingClientRect();
+    
+    // Set up camera
+    objectCamera = new Three.PerspectiveCamera(75, modelSize.width / modelSize.height, 0.1, 1000);
+    
+    // Set up ambient light
+    let ambientLight = new Three.AmbientLight(0xffffff, 5.0);
+    objectScene.add(ambientLight);
+    
+    // Set up renderer
+    const objectInfo = document.getElementById('object-model');
+    objectRenderer = new Three.WebGLRenderer({ canvas: objectInfo });
+    objectRenderer.setSize(modelSize.width, modelSize.height);
+
+    // Set up OrbitControls
+    objectInfoControls = new OrbitControls(objectCamera, objectRenderer.domElement);
+    objectInfoControls.enabled = true;
+
+    // Clone objects
+    const clonedObjects = objects.clone();
+    
+    // Add cloned objects to the scene
+    objectScene.add(clonedObjects);
+
+    // Calculate the bounding box of the cloned objects
+    const boundingBox = new Three.Box3().setFromObject(clonedObjects);
+
+    // Calculate the center of the bounding box
+    const center = new Three.Vector3();
+    boundingBox.getCenter(center);
+
+    // Set camera position to look at the center of the bounding box
+    objectCamera.position.set(center.x, center.y, boundingBox.max.z + 2);
+    
+    // Set the target of the OrbitControls to the center of the bounding box
+    objectInfoControls.target.set(center.x, center.y, center.z);
+
+    // Update the camera and controls
+    objectCamera.updateProjectionMatrix();
+    objectInfoControls.update();
+
+    // Render the scene
+    objectRenderer.render(objectScene, objectCamera);
+}
+
+
+
+function displayObjectInfo(selectedObject) {
+    // Set the content of object-info based on the userData of the selected object
+    // You can customize this part based on your object structure
+    canvas.style.pointerEvents = "none"
+    objectInfo .style.pointerEvents = "auto"
+    userDataTitle.innerHTML = `<h2>Title: ${selectedObject.userData["title"]}</h2>`
+    userDataContent.innerHTML = `<p>Info: ${selectedObject.userData["content"]}</p>`
+    userDataTitle.style.display ="inline-block";
+    userDataContent.style.display ="inline-block";
+
+    //enables object selected to be rendered in object info
+    renderObjectModel = true
+    objectSceneInit(selectedObject)
+    // console.log(selectedObject)
+
+  
+        // Show the "edit" button
+        editInfoButton.style.display = "inline-block";
+        // const objectSceneInfo = objectScene(selectedObject);
+        
+        // renderObjectScene(objectSceneInfo);
+        // console.log(selectedObject.userData.info)
+    
+         // Event listener for the "edit" button
+         editInfoButton.onclick =  () => editUserData(selectedObject);
+         // Event listener for the "update" button
+         updateInfoButton.onclick = () => updateUserData(selectedObject);
+    
+        // editInfoButton.style.display = "none";
+    
+}
+
+function editUserData(selectedObject) {
+    // Hide "edit" button, display input and "update" button
+    userDataTitle.style.display ="none";
+    userDataContent.style.display ="none";
+    editInfoButton.style.display = "none";
+    editTitle.style.display = "inline-block";
+    editContent.style.display = "inline-block";
+    updateInfoButton.style.display = "inline-block";
+    cancelInfoButton.style.display = "inline-block";
+    // Populate input with current userData
+    // editInfo.value = selectedObject.userData.info;
+    editTitleInfo.value = selectedObject.userData["title"];
+    editContentInfo.value = selectedObject.userData["content"];
+}
+
+
+function updateUserData(selectedObject) {
+    // Update userData with the value from the input
+    selectedObject.userData.title = editTitleInfo.value;
+    selectedObject.userData.content= editContentInfo.value;
+
+    // Display updated content
+    displayObjectInfo(selectedObject);
+
+    // Hide input and update button
+    // editInfo.style.display = "none";
+    userDataTitle.style.display ="inline-block";
+    userDataContent.style.display ="inline-block";
+    editTitle.style.display = "none";
+    editContent.style.display = "none";
+    updateInfoButton.style.display = "none";
+    cancelInfoButton.style.display = "none";
+}
+
+cancelInfoButton.addEventListener("click", () => {
+    // Hide input and update buttons
+    userDataTitle.style.display ="inline-block";
+    userDataContent.style.display ="inline-block";
+    editInfoButton.style.display = "inline-block";
+    // editInfo.style.display = "none";
+    editTitle.style.display = "none";
+    editContent.style.display = "none";
+    updateInfoButton.style.display = "none";
+    cancelInfoButton.style.display = "none";
+});
+
+closeButton.addEventListener("click", () => {
+    objectInfo.style.display = "none"
+    // editInfo.style.display = "none";
+    // editTitle.style.display = "none";
+    // editContent.style.display = "none";
+    // updateInfoButton.style.display = "none";
+    // cancelInfoButton.style.display = "none";
+    // controlPanel.style.pointerEvents = "auto"
+    canvas.style.pointerEvents = "auto"
+    renderObjectModel = false
+    disposeObjectScene()
+    if (objectInfoControls) {
+        objectInfoControls.enabled = false; // Disable the controls when closing
+    }
+    
+});
+
+function disposeObjectScene() {
+    objectScene = null;
+    objectCamera = null;
+    objectRenderer = null;
+    objectInfoControls = null;
+}
 
 let keyboard = [];
 
@@ -107,6 +336,10 @@ window.addEventListener('keydown', function (event) {
 
 function render_scene() {
     renderer.render(scene, camera);
+    labelRenderer.render(scene,camera)
+    if(renderObjectModel){
+        objectRenderer.render(objectScene, objectCamera);
+    }
 }
 
 function update() {

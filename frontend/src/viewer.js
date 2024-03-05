@@ -76,7 +76,7 @@ function main() {
     }
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // document.body.appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
     cubes.forEach(cube => {
         scene.add(cube);
     });
