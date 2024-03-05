@@ -55,6 +55,7 @@ control.addEventListener('change', render_scene);
 control.addEventListener('dragging-changed', function (event) {
     mouse_controls.enabled = !event.value;
 });
+scene.add(control);
 scene.add(control)
 
 let addedSplats = [] // path array of splats
