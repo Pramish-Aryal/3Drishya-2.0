@@ -6,6 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+
 
 const loader = new GLTFLoader();
 
@@ -26,6 +29,16 @@ let addedSplats = [] // path array of splats
 let splatsToAdd = []
 let addedObjs = [] // path array of objects
 
+// Text ko lagi init haru by Nisan
+const labelDiv = document.createElement('div');
+labelDiv.className = 'label';
+const labelObject = new CSS2DObject(labelDiv);
+labelObject.visible = false
+const mouse = new Three.Vector2();
+let raycaster = new Three.Raycaster();
+document.addEventListener('mousemove', onDocumentMouseMove, false);
+
+
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
     'sharedMemoryForWorkers': false,
@@ -33,8 +46,8 @@ let viewer = new GaussianSplats3D.DropInViewer({
 });
 
 scene.add(viewer)
-
-
+window.scene = scene
+const popLength = scene.children.length;
 
 
 const mouse_controls = new OrbitControls(camera, renderer.domElement);
@@ -55,22 +68,60 @@ function get_url_param(key) {
 
 
 
-function gotoeditor(sceneName){
+function gotoeditor(sceneName) {
     window.location.href = `editor.html?scene=${sceneName}`;
-  }
+}
 
-  const gotoEditorButton = document.getElementById('gotoEditorButton');
-  if (gotoEditorButton) {
-      gotoEditorButton.addEventListener('click', function () {
-          gotoeditor(sceneName);
-      });
-  } 
+const gotoEditorButton = document.getElementById('gotoEditorButton');
+if (gotoEditorButton) {
+    gotoEditorButton.addEventListener('click', function() {
+        gotoeditor(sceneName);
+    });
+}
 
-  function render_scene() {
+
+
+function onDocumentMouseMove(event) {
+
+    event.preventDefault();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+}
+
+function render_scene() {
+
+
+
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+    for (let i = 0; i < intersects.length; i++) {
+        let object = intersects[i].object;
+        // Check if the intersected object or its parent has the 'draggable' property
+        while (object && !object.userData['draggable']) {
+            object = object.parent;
+        }
+        if (object && object.userData['draggable'] && object.userData['title']) {
+            console.log("collider?")
+
+            object.add(labelObject);
+            labelDiv.textContent = object.userData.title
+            labelObject.visible = true
+
+            break; // Only attach the first draggable object
+        } else {
+            object = null;
+            labelObject.visible = false
+        }
+    }
     renderer.render(scene, camera);
 }
 
-  function update() {
+function update() {
 
     mouse_controls.update();
 
@@ -86,102 +137,6 @@ function gotoeditor(sceneName){
 
     requestAnimationFrame(update);
 }
-
-
-  function handleLoadKsplat(event) {
-    const file = event.target.files[0]; // Get the selected file
-    const fileName = file.name; // Get the file name
-    // const filePath = URL.createObjectURL(file); // Get the file path
-    const filePath = `/data/ksplats/${fileName}`
-    // Do something with the file name and path
-    console.log("Ksplat File name:", fileName);
-    console.log("Ksplat File path:", filePath);
-
-    // our file path is always assumed to be filePath
-
-    const quaternion = new Three.Quaternion();
-    quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), Math.PI);
-
-    // viewer.addSplatScenes([{
-    //     'path': '/data/ksplats/civil bench wide.ksplat',
-    //     'splatAlphaRemovalThreshold': 20,
-    //     'position': [0, 10, 0],
-    // }
-    //     , {
-    //     'path': '/data/ksplats/civil bench.ksplat',
-    //     'rotation': quaternion.toArray(),
-    //     'scale': [0.1, 0.1, 0.1],
-    //     'position': [0, 0, 0],
-
-    // }
-    // ]);
-
-    viewer.addSplatScene(filePath, {
-        'splatAlphaRemovalThreshold': 5,
-        'position': [0, 0, 0],
-        'rotation': quaternion.toArray(),
-    }).then(data => {
-        //let index = 0;
-        // viewer.getSplatScene(index).position = new Vector3(10, 10, 10);
-        // viewer.getSplatScene(index).rotation = quaternion;
-        //viewer.getSplatScene(index).updateTransform()
-
-        let index = addedSplats.length;
-        let splatScene = viewer.getSplatScene(index);
-        let splat = {
-            'path': filePath,
-            'name': fileName,
-            'transform': {
-                'position': splatScene.position,
-                'rotation': splatScene.quaternion.toArray(),
-                'scale': splatScene.scale,
-            }
-        }
-
-        console.log(splat)
-        addedSplats.push(splat);
-    });
-}
-
-
-function handleLoadModel(event) {
-    const file = event.target.files[0]; // Get the selected file
-    const fileName = file.name; // Get the file name
-    const objName = fileName.split('.')[0];
-    const filePath = `/data/objs/${objName}/${fileName}`
-
-    loader.load(
-        // resource URL
-        filePath,
-        // called when the resource is loaded
-        function (gltf) {
-            gltf.scene.userData['draggable'] = true;
-            scene.add(gltf.scene);
-
-            let obj = {
-                'path': filePath,
-                'name': objName,
-                'ref': gltf.scene //remove ref with transfrom when saving scene
-
-            }
-            addedObjs.push(obj);
-        },
-        // called while loading is progressing
-        function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-        },
-        // called when loading has errors
-        function (error) {
-            console.log('An error happened');
-        }
-    );
-
-
-    // Do something with the file name and path
-    console.log("Model File name:", fileName);
-    console.log("Model File path:", filePath);
-}
-
 
 
 function main() {
@@ -202,43 +157,37 @@ function main() {
 
 document.addEventListener('DOMContentLoaded', main());
 
-
-
 function loadScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
     addedObjs = []
     addedSplats = []
 
-    while (scene.children.length > 2) {
+    while (scene.children.length > popLength) {
         scene.remove(scene.children.pop());
     }
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
-        if (!response.ok) {
-            return response.json().then(res => { throw new Error(res.message) });
-        }
-        return response.json();
-    })
+            if (!response.ok) {
+                return response.json().then(res => { throw new Error(res.message) });
+            }
+            return response.json();
+        })
         .then(data => {
             console.log(data);
-            data.ksplats.forEach(splat => {
-                viewer.addSplatScene(splat.path, {
-                    'splatAlphaRemovalThreshold': 5,
-                    'position': splat.transform.position,
-                    'rotation': splat.transform.rotation,
-                    'scale': splat.transform.scale,
-                }).then(data => { });
-            });
+            let tempArr = []
+            console.log(data.ksplats)
+            viewer.addSplatScenes(data.ksplats)
 
             var receivedObjs = data.objects //converted to added objs in next bit of code
             addedSplats = data.ksplats
-            // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
+
+            // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
             // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
                     // resource URL
                     obj.path,
                     // called when the resource is loaded
-                    function (gltf) {
+                    function(gltf) {
                         gltf.scene.userData['draggable'] = true;
                         scene.add(gltf.scene);
                         let tempObj = {
@@ -246,6 +195,7 @@ function loadScene() {
                             'name': obj.name,
                             'ref': gltf.scene //remove transform and add active reference when loading scene
                         }
+                        gltf.scene.userData = obj.userData;
                         addedObjs.push(tempObj);
 
                         //Set Transforms from config file.
@@ -257,11 +207,11 @@ function loadScene() {
                         // @nisan has done something here
                     },
                     // called while loading is progressing
-                    function (xhr) {
+                    function(xhr) {
                         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                     },
                     // called when loading has errors
-                    function (error) {
+                    function(error) {
                         console.log('An error happened:', error);
                     }
                 );

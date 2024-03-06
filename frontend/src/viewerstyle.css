@@ -5,10 +5,11 @@ html {
     overflow-y: hidden;
 }
 
-#viewer-control{
+#viewer-control {
     position: absolute;
 }
 
-h1{
-    color: white;;
+h1 {
+    color: white;
+    ;
 }

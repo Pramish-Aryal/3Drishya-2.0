@@ -52,10 +52,11 @@ mouse_controls.enableZoom = true;
 //transform control
 const control = new TransformControls(camera, renderer.domElement);
 control.addEventListener('change', render_scene);
-control.addEventListener('dragging-changed', function (event) {
+control.addEventListener('dragging-changed', function(event) {
     mouse_controls.enabled = !event.value;
 });
-// scene.add(control);
+
+scene.add(control);
 
 
 let addedSplats = [] // path array of splats
@@ -67,10 +68,14 @@ let viewer = new GaussianSplats3D.DropInViewer({
     'sharedMemoryForWorkers': false,
     'dynamicScene': true
 });
-
-// const sceneName = get_url_param('name');
+window.viewer = viewer
+window.scene = scene
+    // const sceneName = get_url_param('name');
 let sceneName = "";
 scene.add(viewer);
+
+const popLength = scene.children.length;
+////////////////////////// Ensure That All Permanent (non reloaded elements when loading) are added above this line////////////////////
 
 //text-renderer
 const labelRenderer = new CSS2DRenderer();
@@ -107,14 +112,14 @@ canvas.addEventListener('mousedown', (event) => {
             object = object.parent;
         }
         if (object && object.userData['draggable']) {
-    
-            if(event.button === 0){
+
+            if (event.button === 0) {
                 control.attach(object);
-            } else if(event.button === 2){
+            } else if (event.button === 2) {
                 objectInfo.style.display = "grid";
                 displayObjectInfo(object);
-            }else if(event.button == 1){
-                
+            } else if (event.button == 1) {
+
             }
             break; // Only attach the first draggable object
         }
@@ -142,7 +147,7 @@ canvas.addEventListener('mousedown', (event) => {
 //             object = object.parent;
 //         }
 //         if (object && object.userData['draggable'] && object.userData['title']) {
-            
+
 //             object.add(labelObject);
 //             labelDiv.textContent =  object.userData.title
 //             labelObject.visible = true
@@ -160,21 +165,21 @@ canvas.addEventListener('mousedown', (event) => {
 // Overlay Scene
 let renderObjectModel = false
 let objectInfoControls
-let objectScene,objectCamera,objectRenderer
+let objectScene, objectCamera, objectRenderer
 
 function objectSceneInit(objects) {
     // console.log(objects);
     objectScene = new Three.Scene();
     objectScene.background = new Three.Color("#ADD8E6");
     const modelSize = document.getElementById('object-model').getBoundingClientRect();
-    
+
     // Set up camera
     objectCamera = new Three.PerspectiveCamera(75, modelSize.width / modelSize.height, 0.1, 1000);
-    
+
     // Set up ambient light
     let ambientLight = new Three.AmbientLight(0xffffff, 5.0);
     objectScene.add(ambientLight);
-    
+
     // Set up renderer
     const objectInfo = document.getElementById('object-model');
     objectRenderer = new Three.WebGLRenderer({ canvas: objectInfo });
@@ -186,7 +191,7 @@ function objectSceneInit(objects) {
 
     // Clone objects
     const clonedObjects = objects.clone();
-    
+
     // Add cloned objects to the scene
     objectScene.add(clonedObjects);
 
@@ -199,7 +204,7 @@ function objectSceneInit(objects) {
 
     // Set camera position to look at the center of the bounding box
     objectCamera.position.set(center.x, center.y, boundingBox.max.z + 2);
-    
+
     // Set the target of the OrbitControls to the center of the bounding box
     objectInfoControls.target.set(center.x, center.y, center.z);
 
@@ -217,38 +222,38 @@ function displayObjectInfo(selectedObject) {
     // Set the content of object-info based on the userData of the selected object
     // You can customize this part based on your object structure
     canvas.style.pointerEvents = "none"
-    objectInfo .style.pointerEvents = "auto"
+    objectInfo.style.pointerEvents = "auto"
     userDataTitle.innerHTML = `<h2>Title: ${selectedObject.userData["title"]}</h2>`
     userDataContent.innerHTML = `<p>Info: ${selectedObject.userData["content"]}</p>`
-    userDataTitle.style.display ="inline-block";
-    userDataContent.style.display ="inline-block";
+    userDataTitle.style.display = "inline-block";
+    userDataContent.style.display = "inline-block";
 
     //enables object selected to be rendered in object info
     renderObjectModel = true
     objectSceneInit(selectedObject)
-    // console.log(selectedObject)
+        // console.log(selectedObject)
 
-  
-        // Show the "edit" button
-        editInfoButton.style.display = "inline-block";
-        // const objectSceneInfo = objectScene(selectedObject);
-        
-        // renderObjectScene(objectSceneInfo);
-        // console.log(selectedObject.userData.info)
-    
-         // Event listener for the "edit" button
-         editInfoButton.onclick =  () => editUserData(selectedObject);
-         // Event listener for the "update" button
-         updateInfoButton.onclick = () => updateUserData(selectedObject);
-    
-        // editInfoButton.style.display = "none";
-    
+
+    // Show the "edit" button
+    editInfoButton.style.display = "inline-block";
+    // const objectSceneInfo = objectScene(selectedObject);
+
+    // renderObjectScene(objectSceneInfo);
+    // console.log(selectedObject.userData.info)
+
+    // Event listener for the "edit" button
+    editInfoButton.onclick = () => editUserData(selectedObject);
+    // Event listener for the "update" button
+    updateInfoButton.onclick = () => updateUserData(selectedObject);
+
+    // editInfoButton.style.display = "none";
+
 }
 
 function editUserData(selectedObject) {
     // Hide "edit" button, display input and "update" button
-    userDataTitle.style.display ="none";
-    userDataContent.style.display ="none";
+    userDataTitle.style.display = "none";
+    userDataContent.style.display = "none";
     editInfoButton.style.display = "none";
     editTitle.style.display = "inline-block";
     editContent.style.display = "inline-block";
@@ -264,15 +269,15 @@ function editUserData(selectedObject) {
 function updateUserData(selectedObject) {
     // Update userData with the value from the input
     selectedObject.userData.title = editTitleInfo.value;
-    selectedObject.userData.content= editContentInfo.value;
+    selectedObject.userData.content = editContentInfo.value;
 
     // Display updated content
     displayObjectInfo(selectedObject);
 
     // Hide input and update button
     // editInfo.style.display = "none";
-    userDataTitle.style.display ="inline-block";
-    userDataContent.style.display ="inline-block";
+    userDataTitle.style.display = "inline-block";
+    userDataContent.style.display = "inline-block";
     editTitle.style.display = "none";
     editContent.style.display = "none";
     updateInfoButton.style.display = "none";
@@ -281,8 +286,8 @@ function updateUserData(selectedObject) {
 
 cancelInfoButton.addEventListener("click", () => {
     // Hide input and update buttons
-    userDataTitle.style.display ="inline-block";
-    userDataContent.style.display ="inline-block";
+    userDataTitle.style.display = "inline-block";
+    userDataContent.style.display = "inline-block";
     editInfoButton.style.display = "inline-block";
     // editInfo.style.display = "none";
     editTitle.style.display = "none";
@@ -293,19 +298,19 @@ cancelInfoButton.addEventListener("click", () => {
 
 closeButton.addEventListener("click", () => {
     objectInfo.style.display = "none"
-    // editInfo.style.display = "none";
-    // editTitle.style.display = "none";
-    // editContent.style.display = "none";
-    // updateInfoButton.style.display = "none";
-    // cancelInfoButton.style.display = "none";
-    // controlPanel.style.pointerEvents = "auto"
+        // editInfo.style.display = "none";
+        // editTitle.style.display = "none";
+        // editContent.style.display = "none";
+        // updateInfoButton.style.display = "none";
+        // cancelInfoButton.style.display = "none";
+        // controlPanel.style.pointerEvents = "auto"
     canvas.style.pointerEvents = "auto"
     renderObjectModel = false
     disposeObjectScene()
     if (objectInfoControls) {
         objectInfoControls.enabled = false; // Disable the controls when closing
     }
-    
+
 });
 
 function disposeObjectScene() {
@@ -321,26 +326,44 @@ addEventListener('keyup', (event) => {
     keyboard[event.key] = false;
 })
 
-window.addEventListener('keydown', function (event) {
+window.addEventListener('keydown', function(event) {
     keyboard[event.key] = true;
     switch (event.key.toLowerCase()) {
-        case "w": control.setMode('translate'); break;
-        case "r": control.setMode('rotate'); break;
-        case "e": control.setMode('scale'); break;
-        case "num+": control.setSize(control.size + 0.1); break;
-        case "num-": control.setSize(Math.max(control.size - 0.1, 0.1)); break;
-        case "x": control.showX = !control.showX; break;
-        case "y": control.showY = !control.showY; break;
-        case "z": control.showZ = !control.showZ; break;
-        case "escape": control.detach(); break;
+        case "w":
+            control.setMode('translate');
+            break;
+        case "r":
+            control.setMode('rotate');
+            break;
+        case "e":
+            control.setMode('scale');
+            break;
+        case "num+":
+            control.setSize(control.size + 0.1);
+            break;
+        case "num-":
+            control.setSize(Math.max(control.size - 0.1, 0.1));
+            break;
+        case "x":
+            control.showX = !control.showX;
+            break;
+        case "y":
+            control.showY = !control.showY;
+            break;
+        case "z":
+            control.showZ = !control.showZ;
+            break;
+        case "escape":
+            control.detach();
+            break;
     }
 
 });
 
 function render_scene() {
     renderer.render(scene, camera);
-    labelRenderer.render(scene,camera)
-    if(renderObjectModel){
+    labelRenderer.render(scene, camera)
+    if (renderObjectModel) {
         objectRenderer.render(objectScene, objectCamera);
     }
 }
@@ -374,7 +397,7 @@ function handleLoadKsplat(event) {
     const fileName = file.name; // Get the file name
     // const filePath = URL.createObjectURL(file); // Get the file path
     const filePath = `/data/ksplats/${fileName}`
-    // Do something with the file name and path
+        // Do something with the file name and path
     console.log("Ksplat File name:", fileName);
     console.log("Ksplat File path:", filePath);
 
@@ -396,32 +419,28 @@ function handleLoadKsplat(event) {
 
     // }
     // ]);
-
-    viewer.addSplatScene(filePath, {
+    let tempSplat = {
+        'path': filePath,
+        'name': fileName,
         'splatAlphaRemovalThreshold': 5,
         'position': [0, 0, 0],
         'rotation': quaternion.toArray(),
-    }).then(data => {
-        //let index = 0;
-        // viewer.getSplatScene(index).position = new Vector3(10, 10, 10);
-        // viewer.getSplatScene(index).rotation = quaternion;
-        //viewer.getSplatScene(index).updateTransform()
+        'scale': [1, 1, 1],
 
-        let index = addedSplats.length;
-        let splatScene = viewer.getSplatScene(index);
-        let splat = {
-            'path': filePath,
-            'name': fileName,
-            'transform': {
-                'position': splatScene.position,
-                'rotation': splatScene.quaternion.toArray(),
-                'scale': splatScene.scale,
-            }
-        }
+    }
 
-        console.log(splat)
-        addedSplats.push(splat);
-    });
+
+
+    addedSplats.push(tempSplat);
+    viewer.addSplatScenes(addedSplats)
+
+
+    // for (let index = 0; index < addedSplats.length; ++index) {
+    //     let splatScene = viewer.getSplatScene(index);
+    //     addedSplats[index].position = splatScene.position.toArray();
+    //     addedSplats[index].quaternion = splatScene.quaternion.toArray()
+    //     addedSplats[index].scale = splatScene.scale.toArray();
+    // }
 }
 
 
@@ -435,7 +454,7 @@ function handleLoadModel(event) {
         // resource URL
         filePath,
         // called when the resource is loaded
-        function (gltf) {
+        function(gltf) {
             gltf.scene.userData['draggable'] = true;
             scene.add(gltf.scene);
 
@@ -448,11 +467,11 @@ function handleLoadModel(event) {
             addedObjs.push(obj);
         },
         // called while loading is progressing
-        function (xhr) {
+        function(xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         },
         // called when loading has errors
-        function (error) {
+        function(error) {
             console.log('An error happened');
         }
     );
@@ -494,11 +513,9 @@ function saveScene() {
 
     for (let index = 0; index < addedSplats.length; ++index) {
         let splatScene = viewer.getSplatScene(index);
-        addedSplats[index].transform = {
-            'position': splatScene.position,
-            'rotation': splatScene.quaternion.toArray(),
-            'scale': splatScene.scale.toArray(),
-        };
+        addedSplats[index].position = splatScene.position.toArray();
+        addedSplats[index].quaternion = splatScene.quaternion.toArray()
+        addedSplats[index].scale = splatScene.scale.toArray();
     }
 
     var ObjsToSave = [];
@@ -512,7 +529,8 @@ function saveScene() {
                 'position': addedObjs[index].ref.position,
                 'rotation': addedObjs[index].ref.quaternion.toArray(),
                 'scale': addedObjs[index].ref.scale
-            }
+            },
+            'userData': addedObjs[index].ref.userData,
             //exchange ref with transfrom when saving scene
         }
         ObjsToSave.push(obj);
@@ -526,10 +544,10 @@ function saveScene() {
     console.log("Sending data to save:", dataToSend);
 
     fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-        body: JSON.stringify(dataToSend)
-    })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            body: JSON.stringify(dataToSend)
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -551,36 +569,32 @@ function loadScene() {
     addedObjs = []
     addedSplats = []
 
-    while (scene.children.length > 2) {
+    while (scene.children.length > popLength) {
         scene.remove(scene.children.pop());
     }
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
-        if (!response.ok) {
-            return response.json().then(res => { throw new Error(res.message) });
-        }
-        return response.json();
-    })
+            if (!response.ok) {
+                return response.json().then(res => { throw new Error(res.message) });
+            }
+            return response.json();
+        })
         .then(data => {
             console.log(data);
-            data.ksplats.forEach(splat => {
-                viewer.addSplatScene(splat.path, {
-                    'splatAlphaRemovalThreshold': 5,
-                    'position': splat.transform.position,
-                    'rotation': splat.transform.rotation,
-                    'scale': splat.transform.scale,
-                }).then(data => { });
-            });
+            let tempArr = []
+            console.log(data.ksplats)
+            viewer.addSplatScenes(data.ksplats)
 
             var receivedObjs = data.objects //converted to added objs in next bit of code
             addedSplats = data.ksplats
-            // TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
+
+            // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
             // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
                     // resource URL
                     obj.path,
                     // called when the resource is loaded
-                    function (gltf) {
+                    function(gltf) {
                         gltf.scene.userData['draggable'] = true;
                         scene.add(gltf.scene);
                         let tempObj = {
@@ -588,6 +602,7 @@ function loadScene() {
                             'name': obj.name,
                             'ref': gltf.scene //remove transform and add active reference when loading scene
                         }
+                        gltf.scene.userData = obj.userData;
                         addedObjs.push(tempObj);
 
                         //Set Transforms from config file.
@@ -599,11 +614,11 @@ function loadScene() {
                         // @nisan has done something here
                     },
                     // called while loading is progressing
-                    function (xhr) {
+                    function(xhr) {
                         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                     },
                     // called when loading has errors
-                    function (error) {
+                    function(error) {
                         console.log('An error happened:', error);
                     }
                 );
