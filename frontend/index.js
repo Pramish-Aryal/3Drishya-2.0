@@ -27,6 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
       const scenes = document.getElementById('scenes');
       const dotsContainer = document.getElementById('dotsContainer');
 
+      const dotSpan = document.createElement('span');
+        dotSpan.className = 'dot';
+        dotSpan.onclick = function () {
+          currentSlide(1);
+        };
+        dotsContainer.appendChild(dotSpan);
+
       // Add a new scene and dot for each file
       data.files.forEach((fileName, index) => {
         const sceneDiv = document.createElement('div');

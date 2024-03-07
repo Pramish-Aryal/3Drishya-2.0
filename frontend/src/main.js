@@ -116,7 +116,7 @@ canvas.addEventListener('mousedown', (event) => {
             if (event.button === 0) {
                 control.attach(object);
             } else if (event.button === 2) {
-                objectInfo.style.display = "grid";
+                objectInfo.style.display = "flex";
                 displayObjectInfo(object);
             } else if (event.button == 1) {
 

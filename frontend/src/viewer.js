@@ -29,15 +29,29 @@ let addedSplats = [] // path array of splats
 let splatsToAdd = []
 let addedObjs = [] // path array of objects
 
-// Text ko lagi init haru by Nisan
+//object-info
+let objectInfo = document.getElementById("object-info")
+let userDataContent = document.getElementById("userDataContent");
+let userDataTitle = document.getElementById("userDataTitle");
+let closeButton = document.getElementById("close-button");
+
+//text-renderer
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.pointerEvents = 'none'
+
+
 const labelDiv = document.createElement('div');
 labelDiv.className = 'label';
 const labelObject = new CSS2DObject(labelDiv);
 labelObject.visible = false
 const mouse = new Three.Vector2();
 let raycaster = new Three.Raycaster();
-document.addEventListener('mousemove', onDocumentMouseMove, false);
 
+canvas.addEventListener('mousemove',onDocumentMouseMove, false);
+canvas.addEventListener('mousedown',onDocumentMouseClick, false)
 
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
@@ -90,9 +104,9 @@ function onDocumentMouseMove(event) {
 
 }
 
-function render_scene() {
-
-
+function onDocumentMouseClick(event){
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     // update the picking ray with the camera and mouse position
     raycaster.setFromCamera(mouse, camera);
@@ -105,20 +119,142 @@ function render_scene() {
         while (object && !object.userData['draggable']) {
             object = object.parent;
         }
-        if (object && object.userData['draggable'] && object.userData['title']) {
-            console.log("collider?")
+        if (object && object.userData['draggable']) {
 
-            object.add(labelObject);
-            labelDiv.textContent = object.userData.title
-            labelObject.visible = true
-
+                objectInfo.style.display = "flex";
+                displayObjectInfo(object);
             break; // Only attach the first draggable object
-        } else {
-            object = null;
-            labelObject.visible = false
         }
     }
+}
+
+let renderObjectModel = false
+let objectInfoControls
+let objectScene, objectCamera, objectRenderer
+
+function objectSceneInit(objects) {
+    // console.log(objects);
+    objectScene = new Three.Scene();
+    objectScene.background = new Three.Color("#ADD8E6");
+    const modelSize = document.getElementById('object-model').getBoundingClientRect();
+
+    // Set up camera
+    objectCamera = new Three.PerspectiveCamera(75, modelSize.width / modelSize.height, 0.1, 1000);
+
+    // Set up ambient light
+    let ambientLight = new Three.AmbientLight(0xffffff, 5.0);
+    objectScene.add(ambientLight);
+
+    // Set up renderer
+    const objectInfo = document.getElementById('object-model');
+    objectRenderer = new Three.WebGLRenderer({ canvas: objectInfo });
+    objectRenderer.setSize(modelSize.width, modelSize.height);
+
+    // Set up OrbitControls
+    objectInfoControls = new OrbitControls(objectCamera, objectRenderer.domElement);
+    objectInfoControls.enabled = true;
+
+    // Clone objects
+    const clonedObjects = objects.clone();
+
+    // Add cloned objects to the scene
+    objectScene.add(clonedObjects);
+
+    // Calculate the bounding box of the cloned objects
+    const boundingBox = new Three.Box3().setFromObject(clonedObjects);
+
+    // Calculate the center of the bounding box
+    const center = new Three.Vector3();
+    boundingBox.getCenter(center);
+
+    // Set camera position to look at the center of the bounding box
+    objectCamera.position.set(center.x, center.y, boundingBox.max.z + 2);
+
+    // Set the target of the OrbitControls to the center of the bounding box
+    objectInfoControls.target.set(center.x, center.y, center.z);
+
+    // Update the camera and controls
+    objectCamera.updateProjectionMatrix();
+    objectInfoControls.update();
+
+    // Render the scene
+    objectRenderer.render(objectScene, objectCamera);
+}
+
+
+
+function displayObjectInfo(selectedObject) {
+    // Set the content of object-info based on the userData of the selected object
+    // You can customize this part based on your object structure
+    canvas.style.pointerEvents = "none"
+    objectInfo.style.pointerEvents = "auto"
+    userDataTitle.innerHTML = `<h2>Title: ${selectedObject.userData["title"]}</h2>`
+    userDataContent.innerHTML = `<p>Info: ${selectedObject.userData["content"]}</p>`
+    userDataTitle.style.display = "inline-block";
+    userDataContent.style.display = "inline-block";
+
+    //enables object selected to be rendered in object info
+    renderObjectModel = true
+    objectSceneInit(selectedObject)
+        // console.log(selectedObject)
+
+}
+
+closeButton.addEventListener("click", () => {
+    objectInfo.style.display = "none"
+    canvas.style.pointerEvents = "auto"
+    renderObjectModel = false
+    disposeObjectScene()
+    if (objectInfoControls) {
+        objectInfoControls.enabled = false; // Disable the controls when closing
+    }
+
+});
+
+function disposeObjectScene() {
+    objectScene = null;
+    objectCamera = null;
+    objectRenderer = null;
+    objectInfoControls = null;
+}
+
+
+function render_scene() {
+
+    // update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+    // calculate objects intersecting the picking ray
+    let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+    if(intersects.length>0){
+        for (let i = 0; i < intersects.length; i++) {
+            let object = intersects[i].object;
+            // Check if the intersected object or its parent has the 'draggable' property
+            while (object && !object.userData['draggable']) {
+                object = object.parent;
+            }
+            if (object && object.userData['draggable'] && object.userData['title']) {
+                // console.log("collider?")
+    
+                object.add(labelObject);
+                labelDiv.textContent = object.userData.title
+                labelObject.visible = true
+    
+                break; // Only attach the first draggable object
+            }
+        }
+    }else{
+        labelObject.visible = false
+    }
+        
+    
+    
+    
     renderer.render(scene, camera);
+    labelRenderer.render(scene, camera)
+
+    if (renderObjectModel) {
+        objectRenderer.render(objectScene, objectCamera);
+    }
 }
 
 function update() {

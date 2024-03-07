@@ -72,13 +72,16 @@ button:hover {
 }
 
 #object-model{
-    width: 100%;
+    /* display: block; */
+    width: 50%;
     height: 100%;
+    flex:1;
 }
 
 #info-panel {
     margin-top: 30px; 
     margin-bottom: 10px;
+    flex:1;
     overflow: hidden;
 
 }

@@ -11,5 +11,65 @@ html {
 
 h1 {
     color: white;
-    ;
+}
+
+#object-info {
+    position: absolute;
+    display: none;
+    /* grid-template-columns: 1fr 1fr; */
+    gap: 10px;
+    width: 90%;
+    height: 90%;
+    z-index: 100;
+    padding: 10px;
+    border-style: solid;
+    background-color: aliceblue;
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Center the element precisely */
+    
+}
+
+#object-model{
+    /* display: block; */
+    width: 50%;
+    height: 100%;
+    flex:1;
+}
+
+/* #canvas-model{
+    
+    position:relative;
+} */
+
+#info-panel {
+    margin-top: 30px; 
+    margin-bottom: 10px;
+    flex:1;
+    overflow: hidden;
+
+}
+
+#userDataContent{
+    padding-bottom: 10px;
+}
+#userDataTitle{
+    padding-bottom: 10px;
+}
+
+#close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.label{
+    background-color:black;
+    color:white;
+    padding: 10px;
+    position: relative;
+    translate: 0px -50px;
+    border-radius: 60px;
 }
