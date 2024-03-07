@@ -17,6 +17,10 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 
 import * as GaussianSplats3D from '@mkkellogg/gaussian-splats-3d';
 
+import { GUI } from 'dat.gui';
+
+
+
 const loader = new GLTFLoader();
 // const renderer = new Three.WebGLRenderer();
 let canvas = document.querySelector('.webgl_canvas');
@@ -40,6 +44,9 @@ let updateInfoButton = document.getElementById("updateInfoButton");
 let cancelInfoButton = document.getElementById("cancelInfoButton");
 let closeButton = document.getElementById("close-button");
 
+
+let ActiveEuler = new Three.Euler();
+let DegreeEuler = new Vector3();
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
 // document.querySelector("#buttonDiv").appendChild(renderer.domElement);
@@ -76,6 +83,161 @@ scene.add(viewer);
 
 const popLength = scene.children.length;
 ////////////////////////// Ensure That All Permanent (non reloaded elements when loading) are added above this line////////////////////
+
+///    GUI for Splat Movement ////
+const gui = new GUI();
+
+
+
+const objectControls = gui.addFolder('Object Controls');
+let selectedObjectDropDown = { "selectedObject": null };
+let selectedObject = null
+    // Dropdown list for object selection
+let objectList = {};
+
+let objectController = null;
+
+
+let positionFolder = null;
+let positionXController, positionYController, positionZController;
+// Create input fields for rotation
+let rotationFolder = null;
+let rotationXController, rotationYController, rotationZController;
+// Create input fields for scale
+let scaleFolder = null;
+let scaleXController, scaleYController, scaleZController;
+
+function UpdateSplatUIList() {
+    console.log("added splats are", addedSplats)
+
+    for (let index = 0; index < addedSplats.length; index++) {
+        objectList[addedSplats[index].name] = viewer.getSplatScene(index);
+    }
+    removeTransformFolder(objectControls);
+    if (objectController) objectControls.remove(objectController)
+    objectController = objectControls.add(selectedObjectDropDown, "selectedObject", Object.keys(objectList)).name('Select Object');
+
+    createTransformFolder(objectControls)
+
+    objectController.onChange(() => {
+        let selectedObjectName = selectedObjectDropDown.selectedObject
+            // console.log(selectedObjectName)
+        selectedObject = objectList[selectedObjectName]
+            // console.log(objectList[selectedObjectName])
+        removeControllers();
+        if (selectedObject) {
+            createControllers(selectedObject);
+        }
+    })
+}
+
+
+UpdateSplatUIList()
+
+// scene.traverse((child) => {
+//     if (child instanceof Three.Mesh) {
+//         if (child.name) {
+//             objectList[child.name] = child;
+//         }
+//     }
+// });
+// console.log(objectList)
+
+// console.log(objectController)
+function createTransformFolder(objectControls) {
+    positionFolder = objectControls.addFolder('Position');
+    rotationFolder = objectControls.addFolder('Rotation');
+    scaleFolder = objectControls.addFolder('Scale');
+}
+
+function removeTransformFolder(objectControls) {
+    removeControllers()
+        // if (positionFolder) objectControls.removeFolder(positionFolder);
+    for (var key in objectControls.__folders) {
+        var subfolder = objectControls.__folders[key];
+        objectControls.removeFolder(subfolder);
+    }
+}
+// Create input fields for position
+
+
+function createControllers(selectedObject) {
+    // Create input fields for position
+    positionXController = positionFolder.add(selectedObject.position, 'x').name('X Position');
+    positionYController = positionFolder.add(selectedObject.position, 'y').name('Y Position');
+    positionZController = positionFolder.add(selectedObject.position, 'z').name('Z Position');
+
+    // Create input fields
+    // for rotation
+    ActiveEuler = new Three.Euler();
+
+    let quat = new Three.Quaternion(selectedObject.quaternion._x, selectedObject.quaternion._y, selectedObject.quaternion._z, selectedObject.quaternion._w, );
+    ActiveEuler = ActiveEuler.setFromQuaternion(quat, 'XYZ');
+
+    DegreeEuler.x = ActiveEuler.x * (180 / Math.PI);
+    DegreeEuler.y = ActiveEuler.y * (180 / Math.PI);
+    DegreeEuler.z = ActiveEuler.z * (180 / Math.PI);
+    rotationXController = rotationFolder.add(DegreeEuler, 'x', 0, 360).name('X Rotation');
+    rotationYController = rotationFolder.add(DegreeEuler, 'y', 0, 360).name('Y Rotation');
+    rotationZController = rotationFolder.add(DegreeEuler, 'z', 0, 360).name('Z Rotation');
+
+    // Create input fields for scale
+    scaleXController = scaleFolder.add(selectedObject.scale, 'x').name('X Scale');
+    scaleYController = scaleFolder.add(selectedObject.scale, 'y').name('Y Scale');
+    scaleZController = scaleFolder.add(selectedObject.scale, 'z').name('Z Scale');
+
+}
+
+// Function to remove controllers
+function removeControllers() {
+    if (positionXController) positionFolder.remove(positionXController);
+    if (positionYController) positionFolder.remove(positionYController);
+    if (positionZController) positionFolder.remove(positionZController);
+    if (rotationXController) rotationFolder.remove(rotationXController);
+    if (rotationYController) rotationFolder.remove(rotationYController);
+    if (rotationZController) rotationFolder.remove(rotationZController);
+    if (scaleXController) scaleFolder.remove(scaleXController);
+    if (scaleYController) scaleFolder.remove(scaleYController);
+    if (scaleZController) scaleFolder.remove(scaleZController);
+}
+
+
+// objectController.onChange(updateSelectedObject);
+
+
+function updateObject(selectedObject) {
+    // // Update selected object based on input values
+
+    // selectedObject.position.x = parseFloat(positionFolder.__controllers[0].object.x);
+    // console.log("tf")
+    // selectedObject.position.y = parseFloat(positionFolder.__controllers[1].object.y);
+    // selectedObject.position.z = parseFloat(positionFolder.__controllers[2].object.z);
+
+    // let euler = new Three.Euler(parseFloat(rotationFolder.__controllers[0].object.x), parseFloat(rotationFolder.__controllers[1].object.y), parseFloat(rotationFolder.__controllers[2].object.z));
+    // let quat = new Three.Quaternion();
+    // quat = quat.setFromEuler(euler)
+    // selectedObject.quaternion.copy(quat);
+    // console.log(quat, "   vs ", selectedObject.quaternion);
+    // // selectedObject.quaternion._x = quat.x;
+    // // selectedObject.quaternion._y = quat.y;
+    // // selectedObject.quaternion._z = quat.z;
+    // // selectedObject.quaternion._w = quat.w;
+
+    // selectedObject.scale.x = parseFloat(scaleFolder.__controllers[0].object.x);
+    // selectedObject.scale.y = parseFloat(scaleFolder.__controllers[1].object.y);
+    // selectedObject.scale.z = parseFloat(scaleFolder.__controllers[2].object.z);
+
+}
+
+
+
+
+
+
+//////////    GUI END   ///////////////
+
+
+
 
 //text-renderer
 const labelRenderer = new CSS2DRenderer();
@@ -372,12 +534,22 @@ function update() {
 
     mouse_controls.update();
 
+    if (selectedObject) {
+        let quat = new Three.Quaternion();
+        ActiveEuler.x = DegreeEuler.x * Math.PI / 180;
+        ActiveEuler.y = DegreeEuler.y * Math.PI / 180;
+        ActiveEuler.z = DegreeEuler.z * Math.PI / 180;
+        quat = quat.setFromEuler(ActiveEuler)
+        selectedObject.quaternion.copy(quat);
+    }
+
     // const quaternion = new Three.Quaternion();
     // quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
-
     // viewer.getSplatScene(0).quaternion.copy(quaternion);
-
     // angle += Math.PI / 10;
+
+
+
 
     update_angle();
 
@@ -457,7 +629,7 @@ function handleLoadModel(event) {
         function(gltf) {
             gltf.scene.userData['draggable'] = true;
             scene.add(gltf.scene);
-
+            gltf.scene.name = objName
             let obj = {
                 'path': filePath,
                 'name': objName,
@@ -485,6 +657,8 @@ function handleLoadModel(event) {
 function main() {
 
     sceneName = get_url_param('scene');
+
+
 
     // if (sceneName != "blank") {
     //     console.log(`Loading Scene: ${sceneName}`);
@@ -579,16 +753,19 @@ function loadScene() {
             return response.json();
         })
         .then(data => {
-            console.log(data);
-            let tempArr = []
-            console.log(data.ksplats)
-            viewer.addSplatScenes(data.ksplats)
+
+            addedSplats = data.ksplats
+            viewer.addSplatScenes(data.ksplats).then(() => {
+
+                console.log("added splats are", addedSplats)
+                UpdateSplatUIList();
+            })
+
+
 
             var receivedObjs = data.objects //converted to added objs in next bit of code
-            addedSplats = data.ksplats
-
-            // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
-            // Rebuild objects
+                // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
+                // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
                     // resource URL
@@ -596,6 +773,8 @@ function loadScene() {
                     // called when the resource is loaded
                     function(gltf) {
                         gltf.scene.userData['draggable'] = true;
+                        gltf.scene.name = obj.name;
+
                         scene.add(gltf.scene);
                         let tempObj = {
                             'path': obj.path,
@@ -629,5 +808,7 @@ function loadScene() {
         .catch(error => {
             console.error('There was a problem with the fetch operation:', error);
         });
+
+
 
 }
