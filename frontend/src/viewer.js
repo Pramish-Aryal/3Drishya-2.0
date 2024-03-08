@@ -41,7 +41,7 @@ labelRenderer.setSize(window.innerWidth, window.innerHeight);
 labelRenderer.domElement.style.position = 'absolute';
 labelRenderer.domElement.style.top = '0';
 labelRenderer.domElement.style.pointerEvents = 'none'
-
+document.body.appendChild(labelRenderer.domElement);
 
 const labelDiv = document.createElement('div');
 labelDiv.className = 'label';
@@ -51,7 +51,7 @@ const mouse = new Three.Vector2();
 let raycaster = new Three.Raycaster();
 
 canvas.addEventListener('mousemove',onDocumentMouseMove, false);
-canvas.addEventListener('mousedown',onDocumentMouseClick, false)
+canvas.addEventListener('click',onDocumentMouseClick, false)
 
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
