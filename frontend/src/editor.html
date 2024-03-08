@@ -16,13 +16,19 @@
 <body>
 	<!-- <button type="button" id="saveSceneButton">Save Scene</button>
 		<button type="button" id="loadSceneButton">Load Scene</button> -->
-	<div id="fileHandling">
-		<div class="insideText1">Load KSplat:<input accept=".ksplat, .splat" type="file" id="fileInput1"></div>
-		<div class="insideText2">Load Model:<input accept=".fbx, .obj, .gltf" type="file" id="fileInput2"></div>
-		<div class="insideText3"><button id="loadSceneButton">Load Scene</button></div>
-		<div class="insideText4"><button id="saveSceneButton">Save Scene</button></div>
+	<div id="control-panel">
+		<div id="fileHandling">
+			<div class="insideText1">Load KSplat:<input accept=".ksplat, .splat" type="file" id="fileInput1"></div>
+			<div class="insideText2">Load Model:<input accept=".fbx, .obj, .gltf" type="file" id="fileInput2"></div>
+			<div class="insideText3"><button id="loadSceneButton">Load Scene</button></div>
+			<div class="insideText4"><button id="saveSceneButton">Save Scene</button></div>
+		</div>
+		<div id="splat">
+			<div id="splat-menu"></div>
+			<div id="splat-editor"></div>
+		</div>
 	</div>
-
+	
 
 	<div id="object-info">
 		<div id="close-button">X</div>
@@ -45,7 +51,9 @@
 			<button id="updateInfoButton">Update</button>
 			<button id="cancelInfoButton">Cancel</button>
 		</div>
+
 	</div>
+	
 	<canvas class="webgl_canvas"></canvas>
 </body>
 
