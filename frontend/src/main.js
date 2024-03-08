@@ -85,11 +85,13 @@ const popLength = scene.children.length;
 ////////////////////////// Ensure That All Permanent (non reloaded elements when loading) are added above this line////////////////////
 
 ///    GUI for Splat Movement ////
-const gui = new GUI();
+// const gui = new GUI();
+let gui = new GUI({ autoPlace: false });
+var splatEditor = document.getElementById('splat-editor');
+splatEditor.appendChild(gui.domElement);
 
 
-
-const objectControls = gui.addFolder('Object Controls');
+const objectControls = gui.addFolder('Splat Controls');
 let selectedObjectDropDown = { "selectedObject": null };
 let selectedObject = null
     // Dropdown list for object selection
@@ -252,9 +254,13 @@ labelDiv.className = 'label';
 const labelObject = new CSS2DObject(labelDiv);
 labelObject.visible = false
 
+canvas.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+});
 
 // make it so that only one object can be dragged
 canvas.addEventListener('mousedown', (event) => {
+    const isShiftPressed = event.shiftKey;
     const mouse = new Three.Vector2();
     const raycaster = new Three.Raycaster();
 
@@ -275,9 +281,9 @@ canvas.addEventListener('mousedown', (event) => {
         }
         if (object && object.userData['draggable']) {
 
-            if (event.button === 0) {
+            if (event.button === 0 && isShiftPressed) {
                 control.attach(object);
-            } else if (event.button === 2) {
+            } else if (event.button === 2 && isShiftPressed) {
                 objectInfo.style.display = "flex";
                 displayObjectInfo(object);
             } else if (event.button == 1) {

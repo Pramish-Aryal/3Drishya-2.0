@@ -24,7 +24,7 @@ button:hover {
 
 #fileHandling {
     display: flex;
-    position: absolute;
+    /* position: relative; */
     flex-direction: row;
     gap:50px;
     justify-content: center;
@@ -43,17 +43,22 @@ button:hover {
 
 #control-panel {
     position: absolute;
-    top: 60px;
-    left: 20px;
-    z-index: 100;
-    background-color: #333;
-    color: white;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    border-radius: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
+#splat{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+#splat-menu{
+    color: white;
+}
 
 #object-info {
     position: absolute;
