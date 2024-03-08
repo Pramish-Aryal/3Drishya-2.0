@@ -543,8 +543,6 @@ const ARC_SEGMENTS = 200;
 let spline;
 
 function spline_init() {
-    console.log("SPLINESSS")
-
     for (let i = 0; i < splinePointsLength; i++) {
         addSplineObject(positions[i]);
     }
@@ -875,11 +873,10 @@ function loadScene() {
                 UpdateSplatUIList();
             })
 
+            spline_init();
+
             if (data.cameraPaths)
                 loadSplinePoints(data.cameraPaths)
-
-            spline_init();
-            updateSplineOutline();
 
             var receivedObjs = data.objects //converted to added objs in next bit of code
             // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them

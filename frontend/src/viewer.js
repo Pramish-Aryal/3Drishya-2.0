@@ -24,6 +24,8 @@ scene.add(light);
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
 
+const clock = new Three.Clock();
+
 let sceneName = null
 let addedSplats = [] // path array of splats
 let splatsToAdd = []
@@ -50,8 +52,8 @@ labelObject.visible = false
 const mouse = new Three.Vector2();
 let raycaster = new Three.Raycaster();
 
-canvas.addEventListener('mousemove',onDocumentMouseMove, false);
-canvas.addEventListener('click',onDocumentMouseClick, false)
+canvas.addEventListener('mousemove', onDocumentMouseMove, false);
+canvas.addEventListener('click', onDocumentMouseClick, false)
 
 let viewer = new GaussianSplats3D.DropInViewer({
     'gpuAcceleratedSort': true,
@@ -88,7 +90,7 @@ function gotoeditor(sceneName) {
 
 const gotoEditorButton = document.getElementById('gotoEditorButton');
 if (gotoEditorButton) {
-    gotoEditorButton.addEventListener('click', function() {
+    gotoEditorButton.addEventListener('click', function () {
         gotoeditor(sceneName);
     });
 }
@@ -104,7 +106,7 @@ function onDocumentMouseMove(event) {
 
 }
 
-function onDocumentMouseClick(event){
+function onDocumentMouseClick(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -121,8 +123,8 @@ function onDocumentMouseClick(event){
         }
         if (object && object.userData['draggable']) {
 
-                objectInfo.style.display = "flex";
-                displayObjectInfo(object);
+            objectInfo.style.display = "flex";
+            displayObjectInfo(object);
             break; // Only attach the first draggable object
         }
     }
@@ -196,7 +198,7 @@ function displayObjectInfo(selectedObject) {
     //enables object selected to be rendered in object info
     renderObjectModel = true
     objectSceneInit(selectedObject)
-        // console.log(selectedObject)
+    // console.log(selectedObject)
 
 }
 
@@ -218,6 +220,57 @@ function disposeObjectScene() {
     objectInfoControls = null;
 }
 
+////////// SPLINES START //////////////
+
+const positions = [];
+
+const ARC_SEGMENTS = 200;
+let spline;
+
+function spline_init() {
+    const geometry = new Three.BufferGeometry();
+    geometry.setAttribute('position', new Three.BufferAttribute(new Float32Array(ARC_SEGMENTS * 3), 3));
+    let curve = new Three.CatmullRomCurve3(positions);
+    curve.curveType = 'catmullrom';
+    // curve.curveType = 'centripetal';
+    // curve.curveType = 'chordal';
+    curve.mesh = new Three.Line(geometry.clone(), new Three.LineBasicMaterial({
+        color: 0xff0000,
+        opacity: 0.35
+    }));
+    // curve.mesh.castShadow = true;
+    spline = curve;
+    scene.add(curve.mesh)
+}
+
+
+function updateSplineOutline() {
+    if (positions.length < 2) return;
+    const splineMesh = spline.mesh;
+    const position = splineMesh.geometry.attributes.position;
+    for (let i = 0; i < ARC_SEGMENTS; i++) {
+        const t = i / (ARC_SEGMENTS - 1);
+        let point = new Three.Vector3();
+        spline.getPoint(t, point);
+        position.setXYZ(i, point.x, point.y, point.z);
+    }
+    position.needsUpdate = true;
+}
+
+function loadSplinePoints(new_positions) {
+    positions.length = 0;
+    for (let i = 0; i < new_positions.length; i++) {
+        positions.push(new_positions[i]);
+    }
+    updateSplineOutline();
+}
+
+////////// SPLINES END ////////////////
+
+let keyboard = [];
+addEventListener('keyup', (event) => { keyboard[event.key] = false; })
+addEventListener('keydown', (event) => { keyboard[event.key] = true; });
+
 
 function render_scene() {
 
@@ -225,7 +278,7 @@ function render_scene() {
     raycaster.setFromCamera(mouse, camera);
     // calculate objects intersecting the picking ray
     let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
-    if(intersects.length>0){
+    if (intersects.length > 0) {
         for (let i = 0; i < intersects.length; i++) {
             let object = intersects[i].object;
             // Check if the intersected object or its parent has the 'draggable' property
@@ -234,21 +287,18 @@ function render_scene() {
             }
             if (object && object.userData['draggable'] && object.userData['title']) {
                 // console.log("collider?")
-    
+
                 object.add(labelObject);
                 labelDiv.textContent = object.userData.title
                 labelObject.visible = true
-    
+
                 break; // Only attach the first draggable object
             }
         }
-    }else{
+    } else {
         labelObject.visible = false
     }
-        
-    
-    
-    
+
     renderer.render(scene, camera);
     labelRenderer.render(scene, camera)
 
@@ -257,17 +307,35 @@ function render_scene() {
     }
 }
 
+
+let tAlongSpline = 0;
+
+function camera_along_spline() {
+    let dt = clock.getDelta();
+    let curveSpeed = 0.1;
+
+    if (keyboard['w']) {
+        tAlongSpline += curveSpeed * dt;
+    }
+    if (keyboard['s']) {
+        tAlongSpline -= curveSpeed * dt;
+    }
+
+
+    if (tAlongSpline >= 1.0) tAlongSpline = 1.0;
+    if (tAlongSpline <= 0) tAlongSpline = 0;
+
+
+    let camPos = spline.getPoint(tAlongSpline);
+    camera.position.copy(camPos);
+}
+
 function update() {
 
     mouse_controls.update();
 
-    // const quaternion = new Three.Quaternion();
-    // quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
-
-    // viewer.getSplatScene(0).quaternion.copy(quaternion);
-
-    // angle += Math.PI / 10;
-
+    if (spline && positions.length > 0)
+        camera_along_spline();
 
     render_scene();
 
@@ -278,6 +346,8 @@ function update() {
 function main() {
 
     sceneName = get_url_param('scene');
+
+    spline_init();
 
     if (sceneName != "blank") {
         console.log(`Loading Scene: ${sceneName}`);
@@ -302,11 +372,11 @@ function loadScene() {
         scene.remove(scene.children.pop());
     }
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
-            if (!response.ok) {
-                return response.json().then(res => { throw new Error(res.message) });
-            }
-            return response.json();
-        })
+        if (!response.ok) {
+            return response.json().then(res => { throw new Error(res.message) });
+        }
+        return response.json();
+    })
         .then(data => {
             console.log(data);
             let tempArr = []
@@ -316,6 +386,12 @@ function loadScene() {
             var receivedObjs = data.objects //converted to added objs in next bit of code
             addedSplats = data.ksplats
 
+            if (data.cameraPaths)
+                loadSplinePoints(data.cameraPaths)
+
+            spline_init();
+            updateSplineOutline();
+
             // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
             // Rebuild objects
             data.objects.forEach(obj => {
@@ -323,7 +399,7 @@ function loadScene() {
                     // resource URL
                     obj.path,
                     // called when the resource is loaded
-                    function(gltf) {
+                    function (gltf) {
                         gltf.scene.userData['draggable'] = true;
                         scene.add(gltf.scene);
                         let tempObj = {
@@ -343,11 +419,11 @@ function loadScene() {
                         // @nisan has done something here
                     },
                     // called while loading is progressing
-                    function(xhr) {
+                    function (xhr) {
                         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                     },
                     // called when loading has errors
-                    function(error) {
+                    function (error) {
                         console.log('An error happened:', error);
                     }
                 );
