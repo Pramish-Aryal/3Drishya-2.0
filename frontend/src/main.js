@@ -523,8 +523,38 @@ window.addEventListener('keydown', function (event) {
         case "z": control.showZ = !control.showZ; break;
         case "escape": control.detach(); break;
         case "c":
-            console.log(camera.position);
             addPoint(camera.position);
+            break;
+        case "delete":
+            if (control.object) {
+
+                let object = control.object;
+                console.log(object);
+                control.detach();
+                if (object.userData['deletableIndex'] != undefined) {
+                    console.log(splineHelperObjects);
+
+                    let indexToRemove = splineHelperObjects.findIndex((obj) => obj.userData['deletableIndex'] == object.userData['deletableIndex']);
+                    // let indexToRemove = splineHelperObjects.indexOf(object);
+                    if (indexToRemove !== -1) {
+                        // assuming we have the same index in both arrays
+                        splineHelperObjects.splice(indexToRemove, 1);
+                        positions.splice(indexToRemove, 1);
+                    }
+                    scene.remove(object);
+                    updateSplineOutline();
+                } else if (object.userData['deletable'] != undefined) {
+                    console.log(addedObjs);
+                    scene.remove(object);
+                    let indexToRemove = addedObjs.findIndex((obj) => obj['index'] == object.userData['objIndex']);
+                    console.log("removing: ", indexToRemove);
+                    if (indexToRemove !== -1) {
+                        addedObjs.splice(indexToRemove, 1);
+                    }
+
+                    console.log(addedObjs);
+                }
+            }
             break;
     }
 
@@ -582,6 +612,7 @@ function addSplineObject(position) {
     // object.castShadow = true;
     // object.receiveShadow = true;
     object.userData['draggable'] = true;
+    object.userData['deletableIndex'] = splineHelperObjects.length;
     scene.add(object);
     splineHelperObjects.push(object);
     return object;
@@ -736,6 +767,9 @@ function handleLoadModel(event) {
         // called when the resource is loaded
         function (gltf) {
             gltf.scene.userData['draggable'] = true;
+            gltf.scene.userData['deletable'] = true;
+            gltf.scene.userData['objIndex'] = addedObjs.length;
+
             scene.add(gltf.scene);
             gltf.scene.name = objName
             let obj = {
@@ -841,11 +875,9 @@ function saveScene() {
             return response.json();
         })
         .then(data => {
-            alert('JSON data saved successfully:', data)
             console.log('JSON data saved successfully:', data);
         })
         .catch(error => {
-            alert('There was a problem saving the JSON data:', error)
             console.error('There was a problem saving the JSON data:', error);
         });
 }
@@ -887,14 +919,18 @@ function loadScene() {
                     obj.path,
                     // called when the resource is loaded
                     function (gltf) {
+                        // I don't think these are necessary
                         gltf.scene.userData['draggable'] = true;
+                        gltf.scene.userData['deletable'] = true;
+                        gltf.scene.userData['objIndex'] = addedObjs.length;
                         gltf.scene.name = obj.name;
 
                         scene.add(gltf.scene);
                         let tempObj = {
                             'path': obj.path,
                             'name': obj.name,
-                            'ref': gltf.scene //remove transform and add active reference when loading scene
+                            'index': addedObjs.length,
+                            'ref': gltf.scene, //remove transform and add active reference when loading scene
                         }
                         gltf.scene.userData = obj.userData;
                         addedObjs.push(tempObj);
