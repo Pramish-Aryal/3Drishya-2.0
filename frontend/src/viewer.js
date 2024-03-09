@@ -171,8 +171,8 @@ function displayObjectInfo(selectedObject) {
     // You can customize this part based on your object structure
     canvas.style.pointerEvents = "none"
     objectInfo.style.pointerEvents = "auto"
-    userDataTitle.innerHTML = `<h2>Title: ${selectedObject.userData["title"]}</h2>`
-    userDataContent.innerHTML = `<p>Info: ${selectedObject.userData["content"]}</p>`
+    userDataTitle.innerHTML = `<h2>${selectedObject.userData["title"]}</h2>`
+    userDataContent.innerHTML = `<p>${selectedObject.userData["content"]}</p>`
     userDataTitle.style.display = "inline-block";
     userDataContent.style.display = "inline-block";
 

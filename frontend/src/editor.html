@@ -4,11 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>Editor</title>
-	<style>
-		body {
-			margin: 0;
-		}
-	</style>
+	
 	<link rel="stylesheet" type="text/css" href="/src/editorstyle.css">
 	<script type="module" src="/src/main.js"></script>
 </head>
@@ -31,15 +27,17 @@
 	
 
 	<div id="object-info">
-		<div id="close-button">X</div>
 		<!-- <div id="canvas-model"> -->
+			<div id="close-button"><img src="../images/editor/cancel.png" width="30px" height="30px"></div>
 			<canvas id="object-model"></canvas>
-		<!-- </div> -->
+			<!-- </div> -->
 		<div id="info-panel">
+			<div id="info-control">
+				<div id="editInfoButton"><img src="../images/editor/edit1.png" width="30px" height="30px"></div>
+			</div>
 			<div id="userDataTitle"></div>
 			<br/>
 			<div id="userDataContent"></div>
-			<button id="editInfoButton">Edit</button>
 			<div id="editTitle">
 			   <h2><label for="editTitleInfo">Title</label></h2>
 				<input type="text" name="editTitleInfo" id="editTitleInfo" ><br>
@@ -48,8 +46,11 @@
 				<h2><label for="editContentInfo">Content</label></h2>
 				<textarea name="editContentInfo" id ="editContentInfo" rows="10" cols="50" ></textarea><br>
 			</div>
-			<button id="updateInfoButton">Update</button>
-			<button id="cancelInfoButton">Cancel</button>
+			<div id="updateContentButton">
+				<button id="updateInfoButton">Update</button>
+				<button id="cancelInfoButton">Cancel</button>
+			</div>
+			
 		</div>
 
 	</div>
