@@ -80,11 +80,17 @@
                 <div>Scenes</div>
                 <!-- Full-width images with number and caption text -->
                 <div class="Scenes" id="scenes">
-                    <div class="Scene" onclick="gotoeditor('src/viewer.html')">
+                    <div class="Scene" onclick="showSaveNameOption()">
                         <div class="sceneInfo">Create a new Scene</div>
-                        <img src="images/editor/blank.png" style="width:50%">
+                        <img src="images/editor/blank.png" style="width:50%; height: 300px;">
                     </div>
-
+                    <div id="saveNameOption">
+                        <input type="text" id="sceneNameInput" placeholder="Enter scene name">
+                        <div id="saveButton">
+                            <button onclick="saveAndNavigate()">Save</button>
+                            <button onclick="cancelSave()">Cancel</button>
+                        </div>
+                    </div>
                     <!-- <div class="Scene" onclick="gotoeditor('src/editor.html?name=chautariV1')">
                         <div class="sceneInfo">PI Chautari v1</div>
                         <img src="images/editor/mesh.png" style="width:50%">
@@ -102,6 +108,7 @@
                 <div id="dotsContainer" style="text-align: center;"></div>
               
         </div>
+
         <div id="Scope" class="Scope">
           <div>Scope<br/></div>
           <div class="ScopeContent">

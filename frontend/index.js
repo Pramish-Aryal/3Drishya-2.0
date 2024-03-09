@@ -11,6 +11,34 @@ function gotoviewer(path){
   window.location.href = path;
 }
 
+function showSaveNameOption() {
+  const saveNameOption = document.getElementById('saveNameOption');
+  saveNameOption.style.display = 'flex'; // Adjust the display style as needed
+}
+
+function cancelSave() {
+  const saveNameOption = document.getElementById('saveNameOption');
+  saveNameOption.style.display = 'none';
+  // Optionally, you can clear the input field if needed
+  document.getElementById('sceneNameInput').value = '';
+}
+
+// Function to save the scene name and navigate
+function saveAndNavigate() {
+  const sceneNameInput = document.getElementById('sceneNameInput');
+  const sceneName = sceneNameInput.value;
+
+  // Check if a name is entered
+  if (sceneName.trim() !== '') {
+      // Construct the URL and navigate
+      const url = `src/editor.html?scene=${sceneName}&newscene=true`;
+      gotoviewer(url);
+  } else {
+      // Handle case where no name is entered (show an error, prompt, etc.)
+      alert('Please enter a scene name.');
+  }
+}
+
 
 document.addEventListener('DOMContentLoaded', function () {
   // Load files from /queryFiles endpoint
@@ -50,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const img = document.createElement('img');
         img.src = `images/editor/${index % 2 === 0 ? 'mesh.png' : 'mesh2.png'}`;
         img.style.width = '50%';
+        img.style.height = '300px'
 
         sceneDiv.appendChild(sceneInfoDiv);
         sceneDiv.appendChild(img);

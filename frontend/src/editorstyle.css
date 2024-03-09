@@ -24,6 +24,18 @@ button:hover {
     background-color: #777;
 }
 
+p{
+    margin:0
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #c9c6c3; 
+  }
+
 
 #fileHandling {
     display: flex;
@@ -119,6 +131,7 @@ button:hover {
     border-radius: 10px;
     padding: 10px;
     color: #c9c6c3;
+    text-align: justify;
     overflow-y: auto;
     word-wrap: break-word;
 }

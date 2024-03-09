@@ -123,7 +123,7 @@ let objectScene, objectCamera, objectRenderer
 
 function objectSceneInit() {
     objectScene = new Three.Scene();
-    objectScene.background = new Three.Color("#ADD8E6");
+    objectScene.background = new Three.Color("#70A9A1");
     const modelSize = document.getElementById('object-model').getBoundingClientRect();
     objectCamera = new Three.PerspectiveCamera(75, modelSize.width / modelSize.height, 0.1, 1000);
 

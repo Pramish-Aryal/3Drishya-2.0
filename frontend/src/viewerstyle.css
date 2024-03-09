@@ -12,8 +12,21 @@ html {
     position: absolute;
 }
 
+
 h1 {
     color: white;
+}
+
+p{
+    margin:0
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+  }
+
+::-webkit-scrollbar-thumb {
+background: #c9c6c3; 
 }
 
 #object-info {
@@ -63,11 +76,13 @@ h1 {
 }
 
 #userDataContent{
-    padding-bottom: 10px;
     background-color: #2c2c2c;
     border-radius: 10px;
     padding: 10px;
     color: #c9c6c3;
+    text-align: justify;
+    overflow-y: auto;
+    word-wrap: break-word;
 }
 
 
