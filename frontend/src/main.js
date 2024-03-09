@@ -354,7 +354,7 @@ let objectScene, objectCamera, objectRenderer
 function objectSceneInit(objects) {
     // console.log(objects);
     objectScene = new Three.Scene();
-    objectScene.background = new Three.Color("#ADD8E6");
+    objectScene.background = new Three.Color("#70A9A1");
     const modelSize = document.getElementById('object-model').getBoundingClientRect();
 
     // Set up camera
@@ -407,11 +407,16 @@ function displayObjectInfo(selectedObject) {
     // You can customize this part based on your object structure
     canvas.style.pointerEvents = "none"
     objectInfo.style.pointerEvents = "auto"
-    userDataTitle.innerHTML = `<h2>Title: ${selectedObject.userData["title"]}</h2>`
-    userDataContent.innerHTML = `<p>Info: ${selectedObject.userData["content"]}</p>`
+    editInfoButton.style.display = "inline-block";
+    userDataTitle.innerHTML = `<h2>${selectedObject.userData["title"]}</h2>`
+    userDataContent.innerHTML = `<p>${selectedObject.userData["content"]}</p>`
     userDataTitle.style.display = "inline-block";
     userDataContent.style.display = "inline-block";
 
+    editTitle.style.display = "none";
+    editContent.style.display = "none";
+    updateInfoButton.style.display = "none";
+    cancelInfoButton.style.display = "none";
     //enables object selected to be rendered in object info
     renderObjectModel = true
     objectSceneInit(selectedObject)
@@ -419,7 +424,6 @@ function displayObjectInfo(selectedObject) {
 
 
     // Show the "edit" button
-    editInfoButton.style.display = "inline-block";
     // const objectSceneInfo = objectScene(selectedObject);
 
     // renderObjectScene(objectSceneInfo);
@@ -462,6 +466,7 @@ function updateUserData(selectedObject) {
     // editInfo.style.display = "none";
     userDataTitle.style.display = "inline-block";
     userDataContent.style.display = "inline-block";
+
     editTitle.style.display = "none";
     editContent.style.display = "none";
     updateInfoButton.style.display = "none";
@@ -482,12 +487,6 @@ cancelInfoButton.addEventListener("click", () => {
 
 closeButton.addEventListener("click", () => {
     objectInfo.style.display = "none"
-    // editInfo.style.display = "none";
-    // editTitle.style.display = "none";
-    // editContent.style.display = "none";
-    // updateInfoButton.style.display = "none";
-    // cancelInfoButton.style.display = "none";
-    // controlPanel.style.pointerEvents = "auto"
     canvas.style.pointerEvents = "auto"
     renderObjectModel = false
     disposeObjectScene()

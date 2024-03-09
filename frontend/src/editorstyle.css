@@ -1,14 +1,17 @@
+@font-face { font-family: Inter; src: url('../font/Inter.ttf'); } 
 body,
 html {
+    margin: 0;
     overflow-x: hidden;
     overflow-y: hidden;
+    font-family: Inter;
 }
 
 button {
     display: block;
-    width: 100%;
+    /* width: 100%; */
     padding: 10px;
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
     text-align: left;
     background-color: #555;
     color: white;
@@ -70,7 +73,9 @@ button:hover {
     z-index: 100;
     padding: 10px;
     border-style: solid;
-    background-color: aliceblue;
+    border-radius: 10px;
+    border-color: #c9c6c3;
+    background-color: #141414;
     top: 50%; /* Center vertically */
     left: 50%; /* Center horizontally */
     transform: translate(-50%, -50%); /* Center the element precisely */
@@ -84,45 +89,77 @@ button:hover {
 }
 
 #info-panel {
-    margin-top: 30px; 
     margin-bottom: 10px;
     flex:1;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
+}
+
+#info-control{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#info-control:only-child {
+    justify-content: flex-end;
+}
+
+#userDataTitle{
+    align-self: center;
+    padding-bottom: 10px;
+    color: white;
 }
 
 #userDataContent{
     padding-bottom: 10px;
-}
-#userDataTitle{
-    padding-bottom: 10px;
+    background-color: #2c2c2c;
+    border-radius: 10px;
+    padding: 10px;
+    color: #c9c6c3;
+    overflow-y: auto;
+    word-wrap: break-word;
 }
 
 
 #editTitle,#editContent{
     display: none;
     width: 100%;
+    color: #c9c6c3;
 }
 
 #editTitleInfo{
     margin-bottom: 10px;
+    background-color: #c9c6c3;
+    border-radius: 5px;
 }
 
 #editContentInfo{
     resize: none;
     width: 99%;
     margin-bottom: 10px;
+    background-color: #c9c6c3;
+    border-radius: 5px;
 }
 #updateInfoButton, #cancelInfoButton {
     display: none;
 }
 
+#updateContentButton{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
 #close-button {
-    position: absolute;
-    top: 0;
-    right: 0;
+    position:absolute;
+    top:0;
+    right:0;
     padding: 10px;
     cursor: pointer;
+    color: white;
 }
 
 .label{
