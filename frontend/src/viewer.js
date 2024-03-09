@@ -278,6 +278,7 @@ function render_scene() {
     raycaster.setFromCamera(mouse, camera);
     // calculate objects intersecting the picking ray
     let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+    // console.log(intersects)
     if (intersects.length > 0) {
         for (let i = 0; i < intersects.length; i++) {
             let object = intersects[i].object;
@@ -285,7 +286,7 @@ function render_scene() {
             while (object && !object.userData['draggable']) {
                 object = object.parent;
             }
-            if (object && object.userData['draggable'] && object.userData['title']) {
+            if (object && object.userData['draggable'] && object.userData['title'] ) {
                 // console.log("collider?")
 
                 object.add(labelObject);
@@ -293,6 +294,8 @@ function render_scene() {
                 labelObject.visible = true
 
                 break; // Only attach the first draggable object
+            }else{
+                labelObject.visible = false
             }
         }
     } else {
