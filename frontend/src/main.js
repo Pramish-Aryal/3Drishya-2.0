@@ -113,7 +113,7 @@ let selectedObject = null
 let objectList = {};
 
 let objectController = null;
-
+let deleteButton = null;
 
 let positionFolder = null;
 let positionXController, positionYController, positionZController;
@@ -126,22 +126,26 @@ let scaleXController, scaleYController, scaleZController;
 
 function UpdateSplatUIList() {
     console.log("added splats are", addedSplats)
-
+    objectList = {}
     for (let index = 0; index < addedSplats.length; index++) {
         objectList[addedSplats[index].name] = viewer.getSplatScene(index);
     }
+    removeControllers();
     removeTransformFolder(objectControls);
-    if (objectController) objectControls.remove(objectController)
-    objectController = objectControls.add(selectedObjectDropDown, "selectedObject", Object.keys(objectList)).name('Select Object');
+    if (objectController) objectController = objectControls.remove(objectController)
+    selectedObjectDropDown = { "selectedObject": null };
+    console.log(objectController)
+    objectController = objectControls.add(selectedObjectDropDown, "selectedObject", Object.keys(objectList)).name('Choose a Splat');
 
     createTransformFolder(objectControls)
 
     objectController.onChange(() => {
+        removeControllers();
         let selectedObjectName = selectedObjectDropDown.selectedObject
             // console.log(selectedObjectName)
-        selectedObject = objectList[selectedObjectName]
+        if (selectedObjectName)
+            selectedObject = objectList[selectedObjectName]
             // console.log(objectList[selectedObjectName])
-        removeControllers();
         if (selectedObject) {
             createControllers(selectedObject);
         }
@@ -203,19 +207,32 @@ function createControllers(selectedObject) {
     scaleYController = scaleFolder.add(selectedObject.scale, 'y').name('Y Scale');
     scaleZController = scaleFolder.add(selectedObject.scale, 'z').name('Z Scale');
 
+    //Delete button
+    let deleteButtonFn = {
+        buttonFunction: function() {
+            deleteSelectedSplat(selectedObject)
+                // Add your custom functionality here
+        }
+    };
+
+    // Add a button controller
+    deleteButton = objectControls.add(deleteButtonFn, 'buttonFunction').name('Delete Selected Splat');
+
 }
 
 // Function to remove controllers
 function removeControllers() {
-    if (positionXController) positionFolder.remove(positionXController);
-    if (positionYController) positionFolder.remove(positionYController);
-    if (positionZController) positionFolder.remove(positionZController);
-    if (rotationXController) rotationFolder.remove(rotationXController);
-    if (rotationYController) rotationFolder.remove(rotationYController);
-    if (rotationZController) rotationFolder.remove(rotationZController);
-    if (scaleXController) scaleFolder.remove(scaleXController);
-    if (scaleYController) scaleFolder.remove(scaleYController);
-    if (scaleZController) scaleFolder.remove(scaleZController);
+
+    if (deleteButton) deleteButton = objectControls.remove(deleteButton);
+    if (positionXController) positionXController = positionFolder.remove(positionXController);
+    if (positionYController) positionYController = positionFolder.remove(positionYController);
+    if (positionZController) positionZController = positionFolder.remove(positionZController);
+    if (rotationXController) rotationXController = rotationFolder.remove(rotationXController);
+    if (rotationYController) rotationYController = rotationFolder.remove(rotationYController);
+    if (rotationZController) rotationZController = rotationFolder.remove(rotationZController);
+    if (scaleXController) scaleXController = scaleFolder.remove(scaleXController);
+    if (scaleYController) scaleYController = scaleFolder.remove(scaleYController);
+    if (scaleZController) scaleZController = scaleFolder.remove(scaleZController);
 }
 
 
@@ -718,6 +735,39 @@ function get_url_param(key) {
     return urlParams.get(key)
 }
 
+
+function deleteSelectedSplat(splatRef) {
+    let indexToRemove = addedSplats.findIndex((obj) => obj['uuid'] == splatRef.uuid);
+    console.log("removing: ", indexToRemove, " vs ", splatRef.uuid);
+    console.log("Selected OBJ BEFORE CONTROLLER", addedSplats);
+
+    if (indexToRemove !== -1) {
+        addedSplats.splice(indexToRemove, 1);
+        console.log("After remove", addedSplats);
+    }
+    reloadSplats();
+    console.log("Selected OBJ BEFORE CONTROLLER", addedSplats);
+
+}
+
+function reloadSplats() {
+    if (addedSplats.length > 0) {
+        viewer.addSplatScenes(addedSplats).then(() => {
+            for (let index = 0; index < addedSplats.length; index++) {
+                let splatScene = viewer.getSplatScene(index);
+                splatScene.uuid =
+                    addedSplats[index].uuid = index;
+            }
+            UpdateSplatUIList();
+        })
+    } else {
+        alert("At Least one Splat  must be Loaded at a Time!");
+        UpdateSplatUIList();
+    }
+
+}
+
+
 function handleLoadKsplat(event) {
     const file = event.target.files[0]; // Get the selected file
     const fileName = file.name; // Get the file name
@@ -752,14 +802,13 @@ function handleLoadKsplat(event) {
         'position': [0, 0, 0],
         'rotation': quaternion.toArray(),
         'scale': [1, 1, 1],
-
+        'uuid': addedSplats.length
     }
 
 
 
     addedSplats.push(tempSplat);
-    viewer.addSplatScenes(addedSplats)
-
+    reloadSplats()
 
     // for (let index = 0; index < addedSplats.length; ++index) {
     //     let splatScene = viewer.getSplatScene(index);
@@ -848,8 +897,9 @@ function saveScene() {
     for (let index = 0; index < addedSplats.length; ++index) {
         let splatScene = viewer.getSplatScene(index);
         addedSplats[index].position = splatScene.position.toArray();
-        addedSplats[index].quaternion = splatScene.quaternion.toArray()
+        addedSplats[index].rotation = splatScene.quaternion.toArray()
         addedSplats[index].scale = splatScene.scale.toArray();
+        addedSplats[index].uuid = index;
     }
 
     var ObjsToSave = [];
@@ -912,13 +962,22 @@ function loadScene() {
             return response.json();
         })
         .then(data => {
-
             addedSplats = data.ksplats
-            viewer.addSplatScenes(data.ksplats).then(() => {
+            if (data.ksplats.length > 0) {
 
-                console.log("added splats are", addedSplats)
-                UpdateSplatUIList();
-            })
+                viewer.addSplatScenes(data.ksplats).then(() => {
+                    for (let index = 0; index < data.ksplats.length; index++) {
+                        let splatScene = viewer.getSplatScene(index);
+                        splatScene.uuid =
+                            addedSplats[index].uuid = index;
+                    }
+                    console.log("ASDASD splats are", addedSplats)
+                    UpdateSplatUIList();
+                })
+            } else {
+                console.log("no splats found in save file");
+                alert("no splats found in save file");
+            }
 
             spline_init();
 
