@@ -70,7 +70,6 @@ mouse_controls.enableZoom = true;
 
 //transform control
 const control = new TransformControls(camera, renderer.domElement);
-control.addEventListener('change', render_scene);
 control.addEventListener('dragging-changed', (event) => {
     mouse_controls.enabled = !event.value;
 });
@@ -597,8 +596,6 @@ function spline_init() {
     // curve.mesh.castShadow = true;
     spline = curve;
     scene.add(curve.mesh)
-
-    render_scene();
 }
 
 function addSplineObject(position) {
@@ -622,7 +619,6 @@ function addPoint(position) {
     splinePointsLength++;
     positions.push(addSplineObject(position).position);
     updateSplineOutline();
-    render_scene();
 }
 
 function removeAllPoints() {
@@ -632,7 +628,6 @@ function removeAllPoints() {
     splinePointsLength = 0;
     positions.length = 0;
     updateSplineOutline();
-    render_scene();
 }
 
 function updateSplineOutline() {
