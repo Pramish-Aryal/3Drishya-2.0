@@ -28,7 +28,6 @@ const clock = new Three.Clock();
 
 let sceneName = null
 let addedSplats = [] // path array of splats
-let splatsToAdd = []
 let addedObjs = [] // path array of objects
 
 //object-info
@@ -71,18 +70,11 @@ mouse_controls.enableDamping = true;
 mouse_controls.enablePan = true;
 mouse_controls.enableZoom = true;
 
-const cubes = [] // [ create_cube(new Vector3(1, 0, 0), new Vector3(2, 3, 1), 0xff00ff), create_cube()];
-
-
 function get_url_param(key) {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     return urlParams.get(key)
 }
-
-
-
-
 
 function gotoeditor(sceneName) {
     window.location.href = `editor.html?scene=${sceneName}`;
@@ -95,15 +87,10 @@ if (gotoEditorButton) {
     });
 }
 
-
-
 function onDocumentMouseMove(event) {
-
-    event.preventDefault();
-
+    // event.preventDefault();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
 }
 
 function onDocumentMouseClick(event) {
@@ -134,18 +121,11 @@ let renderObjectModel = false
 let objectInfoControls
 let objectScene, objectCamera, objectRenderer
 
-function objectSceneInit(objects) {
-    // console.log(objects);
+function objectSceneInit() {
     objectScene = new Three.Scene();
     objectScene.background = new Three.Color("#ADD8E6");
     const modelSize = document.getElementById('object-model').getBoundingClientRect();
-
-    // Set up camera
     objectCamera = new Three.PerspectiveCamera(75, modelSize.width / modelSize.height, 0.1, 1000);
-
-    // Set up ambient light
-    let ambientLight = new Three.AmbientLight(0xffffff, 5.0);
-    objectScene.add(ambientLight);
 
     // Set up renderer
     const objectInfo = document.getElementById('object-model');
@@ -154,36 +134,37 @@ function objectSceneInit(objects) {
 
     // Set up OrbitControls
     objectInfoControls = new OrbitControls(objectCamera, objectRenderer.domElement);
+}
+
+function objectScenePrep(object) {
+
+    console.log("Initing the sub scene here")
+    // Set up ambient light
+    objectSceneInit();
+    let ambientLight = new Three.AmbientLight(0xffffff, 5.0);
+    objectScene.add(ambientLight);
+
     objectInfoControls.enabled = true;
-
     // Clone objects
-    const clonedObjects = objects.clone();
-
-    // Add cloned objects to the scene
-    objectScene.add(clonedObjects);
-
+    const clonedObject = object.clone();
+    objectScene.add(clonedObject);
+    console.log(clonedObject, object);
     // Calculate the bounding box of the cloned objects
-    const boundingBox = new Three.Box3().setFromObject(clonedObjects);
-
+    const boundingBox = new Three.Box3().setFromObject(clonedObject);
     // Calculate the center of the bounding box
     const center = new Three.Vector3();
     boundingBox.getCenter(center);
-
     // Set camera position to look at the center of the bounding box
     objectCamera.position.set(center.x, center.y, boundingBox.max.z + 2);
-
     // Set the target of the OrbitControls to the center of the bounding box
     objectInfoControls.target.set(center.x, center.y, center.z);
-
     // Update the camera and controls
     objectCamera.updateProjectionMatrix();
     objectInfoControls.update();
-
-    // Render the scene
     objectRenderer.render(objectScene, objectCamera);
+
+    console.log(objectScene);
 }
-
-
 
 function displayObjectInfo(selectedObject) {
     // Set the content of object-info based on the userData of the selected object
@@ -196,8 +177,8 @@ function displayObjectInfo(selectedObject) {
     userDataContent.style.display = "inline-block";
 
     //enables object selected to be rendered in object info
+    objectScenePrep(selectedObject)
     renderObjectModel = true
-    objectSceneInit(selectedObject)
     // console.log(selectedObject)
 
 }
@@ -214,18 +195,18 @@ closeButton.addEventListener("click", () => {
 });
 
 function disposeObjectScene() {
-    objectScene = null;
-    objectCamera = null;
-    objectRenderer = null;
-    objectInfoControls = null;
+    while (objectScene.children.length > 0) {
+        objectScene.remove(objectScene.children[0]);
+    }
 }
 
 ////////// SPLINES START //////////////
 
 const positions = [];
 
-const ARC_SEGMENTS = 200;
+const ARC_SEGMENTS = 50;
 let spline;
+let point = new Three.Vector3();
 
 function spline_init() {
     const geometry = new Three.BufferGeometry();
@@ -240,17 +221,17 @@ function spline_init() {
     }));
     // curve.mesh.castShadow = true;
     spline = curve;
-    scene.add(curve.mesh)
+    // scene.add(curve.mesh)
 }
 
 
 function updateSplineOutline() {
     if (positions.length < 2) return;
+    console.log("I'm getting called")
     const splineMesh = spline.mesh;
     const position = splineMesh.geometry.attributes.position;
     for (let i = 0; i < ARC_SEGMENTS; i++) {
         const t = i / (ARC_SEGMENTS - 1);
-        let point = new Three.Vector3();
         spline.getPoint(t, point);
         position.setXYZ(i, point.x, point.y, point.z);
     }
@@ -271,49 +252,46 @@ let keyboard = [];
 addEventListener('keyup', (event) => { keyboard[event.key] = false; })
 addEventListener('keydown', (event) => { keyboard[event.key] = true; });
 
+window.kb = keyboard;
 
 function render_scene() {
-
-    // update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera);
-    // calculate objects intersecting the picking ray
-    let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
-    // console.log(intersects)
-    if (intersects.length > 0) {
-        for (let i = 0; i < intersects.length; i++) {
-            let object = intersects[i].object;
-            // Check if the intersected object or its parent has the 'draggable' property
-            while (object && !object.userData['draggable']) {
-                object = object.parent;
+    if (!renderObjectModel) {
+        // update the picking ray with the camera and mouse position
+        raycaster.setFromCamera(mouse, camera);
+        // calculate objects intersecting the picking ray
+        let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
+        // console.log(intersects)
+        if (intersects.length > 0) {
+            for (let i = 0; i < intersects.length; i++) {
+                let object = intersects[i].object;
+                // Check if the intersected object or its parent has the 'draggable' property
+                while (object && !object.userData['draggable']) {
+                    object = object.parent;
+                }
+                if (object && object.userData['draggable'] && object.userData['title']) {
+                    object.add(labelObject);
+                    labelDiv.textContent = object.userData.title
+                    labelObject.visible = true
+                    break; // Only attach the first draggable object
+                } else {
+                    labelObject.visible = false
+                }
             }
-            if (object && object.userData['draggable'] && object.userData['title'] ) {
-                // console.log("collider?")
-
-                object.add(labelObject);
-                labelDiv.textContent = object.userData.title
-                labelObject.visible = true
-
-                break; // Only attach the first draggable object
-            }else{
-                labelObject.visible = false
-            }
+        } else {
+            labelObject.visible = false
         }
+        renderer.render(scene, camera);
+        labelRenderer.render(scene, camera)
     } else {
-        labelObject.visible = false
-    }
-
-    renderer.render(scene, camera);
-    labelRenderer.render(scene, camera)
-
-    if (renderObjectModel) {
         objectRenderer.render(objectScene, objectCamera);
     }
 }
 
 
 let tAlongSpline = 0;
+let camPos = new Three.Vector3();
 
-function camera_along_spline() {
+function move_camera_along_spline() {
     let dt = clock.getDelta();
     let curveSpeed = 0.1;
 
@@ -329,38 +307,24 @@ function camera_along_spline() {
     if (tAlongSpline <= 0) tAlongSpline = 0;
 
 
-    let camPos = spline.getPoint(tAlongSpline);
+    spline.getPoint(tAlongSpline, camPos);
     camera.position.copy(camPos);
 }
 
 function update() {
-
-    mouse_controls.update();
-
-    if (spline && positions.length > 0)
-        camera_along_spline();
-
-    render_scene();
-
     requestAnimationFrame(update);
+    mouse_controls.update();
+    if (spline && positions.length > 0)
+        move_camera_along_spline();
+    render_scene();
 }
 
 
 function main() {
-
     sceneName = get_url_param('scene');
-
-    spline_init();
-
-    if (sceneName != "blank") {
-        console.log(`Loading Scene: ${sceneName}`);
-        loadScene(sceneName + ".conf");
-    }
-
+    loadScene(sceneName + ".conf");
     renderer.setSize(window.innerWidth, window.innerHeight);
-    // document.body.appendChild(renderer.domElement);
-
-    camera.position.z = 5;
+    // objectSceneInit();
     update();
 }
 
@@ -389,11 +353,10 @@ function loadScene() {
             var receivedObjs = data.objects //converted to added objs in next bit of code
             addedSplats = data.ksplats
 
+            spline_init();
+
             if (data.cameraPaths)
                 loadSplinePoints(data.cameraPaths)
-
-            spline_init();
-            updateSplineOutline();
 
             // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
             // Rebuild objects
