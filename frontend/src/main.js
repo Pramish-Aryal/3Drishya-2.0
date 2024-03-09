@@ -38,7 +38,7 @@ spotLight.decay = 0;
 spotLight.castShadow = true;
 spotLight.shadow.camera.near = 200;
 spotLight.shadow.camera.far = 2000;
-spotLight.shadow.bias = - 0.000222;
+spotLight.shadow.bias = -0.000222;
 spotLight.shadow.mapSize.width = 1024;
 spotLight.shadow.mapSize.height = 1024;
 scene.add(spotLight);
@@ -70,7 +70,6 @@ mouse_controls.enableZoom = true;
 
 //transform control
 const control = new TransformControls(camera, renderer.domElement);
-control.addEventListener('change', render_scene);
 control.addEventListener('dragging-changed', (event) => {
     mouse_controls.enabled = !event.value;
 });
@@ -93,7 +92,7 @@ let viewer = new GaussianSplats3D.DropInViewer({
 });
 window.viewer = viewer
 window.scene = scene
-// const sceneName = get_url_param('name');
+    // const sceneName = get_url_param('name');
 let sceneName = "";
 scene.add(viewer);
 
@@ -110,7 +109,7 @@ splatEditor.appendChild(gui.domElement);
 const objectControls = gui.addFolder('Splat Controls');
 let selectedObjectDropDown = { "selectedObject": null };
 let selectedObject = null
-// Dropdown list for object selection
+    // Dropdown list for object selection
 let objectList = {};
 
 let objectController = null;
@@ -139,9 +138,9 @@ function UpdateSplatUIList() {
 
     objectController.onChange(() => {
         let selectedObjectName = selectedObjectDropDown.selectedObject
-        // console.log(selectedObjectName)
+            // console.log(selectedObjectName)
         selectedObject = objectList[selectedObjectName]
-        // console.log(objectList[selectedObjectName])
+            // console.log(objectList[selectedObjectName])
         removeControllers();
         if (selectedObject) {
             createControllers(selectedObject);
@@ -170,7 +169,7 @@ function createTransformFolder(objectControls) {
 
 function removeTransformFolder(objectControls) {
     removeControllers()
-    // if (positionFolder) objectControls.removeFolder(positionFolder);
+        // if (positionFolder) objectControls.removeFolder(positionFolder);
     for (var key in objectControls.__folders) {
         var subfolder = objectControls.__folders[key];
         objectControls.removeFolder(subfolder);
@@ -189,7 +188,7 @@ function createControllers(selectedObject) {
     // for rotation
     ActiveEuler = new Three.Euler();
 
-    let quat = new Three.Quaternion(selectedObject.quaternion._x, selectedObject.quaternion._y, selectedObject.quaternion._z, selectedObject.quaternion._w,);
+    let quat = new Three.Quaternion(selectedObject.quaternion._x, selectedObject.quaternion._y, selectedObject.quaternion._z, selectedObject.quaternion._w, );
     ActiveEuler = ActiveEuler.setFromQuaternion(quat, 'XYZ');
 
     DegreeEuler.x = ActiveEuler.x * (180 / Math.PI);
@@ -420,7 +419,7 @@ function displayObjectInfo(selectedObject) {
     //enables object selected to be rendered in object info
     renderObjectModel = true
     objectSceneInit(selectedObject)
-    // console.log(selectedObject)
+        // console.log(selectedObject)
 
 
     // Show the "edit" button
@@ -509,18 +508,36 @@ addEventListener('keyup', (event) => {
     keyboard[event.key] = false;
 })
 
-window.addEventListener('keydown', function (event) {
+window.addEventListener('keydown', function(event) {
     keyboard[event.key] = true;
     switch (event.key.toLowerCase()) {
-        case "w": control.setMode('translate'); break;
-        case "r": control.setMode('rotate'); break;
-        case "e": control.setMode('scale'); break;
-        case "num+": control.setSize(control.size + 0.1); break;
-        case "num-": control.setSize(Math.max(control.size - 0.1, 0.1)); break;
-        case "x": control.showX = !control.showX; break;
-        case "y": control.showY = !control.showY; break;
-        case "z": control.showZ = !control.showZ; break;
-        case "escape": control.detach(); break;
+        case "w":
+            control.setMode('translate');
+            break;
+        case "r":
+            control.setMode('rotate');
+            break;
+        case "e":
+            control.setMode('scale');
+            break;
+        case "num+":
+            control.setSize(control.size + 0.1);
+            break;
+        case "num-":
+            control.setSize(Math.max(control.size - 0.1, 0.1));
+            break;
+        case "x":
+            control.showX = !control.showX;
+            break;
+        case "y":
+            control.showY = !control.showY;
+            break;
+        case "z":
+            control.showZ = !control.showZ;
+            break;
+        case "escape":
+            control.detach();
+            break;
         case "c":
             addPoint(camera.position);
             break;
@@ -543,15 +560,18 @@ window.addEventListener('keydown', function (event) {
                     scene.remove(object);
                     updateSplineOutline();
                 } else if (object.userData['deletable'] != undefined) {
-                    console.log(addedObjs);
+                    console.log("Before remove", addedObjs);
+                    // console.log(addedObjs);
                     scene.remove(object);
-                    let indexToRemove = addedObjs.findIndex((obj) => obj['index'] == object.userData['objIndex']);
+                    console.log(addedObjs[addedObjs.length - 1].indexUUID, " vs uuuuid ", object.uuid)
+                    let indexToRemove = addedObjs.findIndex((obj) => obj['indexUUID'] == object.userData['indexUUID']);
                     console.log("removing: ", indexToRemove);
                     if (indexToRemove !== -1) {
                         addedObjs.splice(indexToRemove, 1);
+                        console.log("After remove", addedObjs);
                     }
 
-                    console.log(addedObjs);
+                    // console.log(addedObjs);
                 }
             }
             break;
@@ -596,8 +616,6 @@ function spline_init() {
     // curve.mesh.castShadow = true;
     spline = curve;
     scene.add(curve.mesh)
-
-    render_scene();
 }
 
 function addSplineObject(position) {
@@ -621,7 +639,6 @@ function addPoint(position) {
     splinePointsLength++;
     positions.push(addSplineObject(position).position);
     updateSplineOutline();
-    render_scene();
 }
 
 function removeAllPoints() {
@@ -631,7 +648,6 @@ function removeAllPoints() {
     splinePointsLength = 0;
     positions.length = 0;
     updateSplineOutline();
-    render_scene();
 }
 
 function updateSplineOutline() {
@@ -707,7 +723,7 @@ function handleLoadKsplat(event) {
     const fileName = file.name; // Get the file name
     // const filePath = URL.createObjectURL(file); // Get the file path
     const filePath = `/data/ksplats/${fileName}`
-    // Do something with the file name and path
+        // Do something with the file name and path
     console.log("Ksplat File name:", fileName);
     console.log("Ksplat File path:", filePath);
 
@@ -764,10 +780,10 @@ function handleLoadModel(event) {
         // resource URL
         filePath,
         // called when the resource is loaded
-        function (gltf) {
+        function(gltf) {
             gltf.scene.userData['draggable'] = true;
             gltf.scene.userData['deletable'] = true;
-            gltf.scene.userData['objIndex'] = addedObjs.length;
+            gltf.scene.userData['indexUUID'] = gltf.scene.uuid;
 
             scene.add(gltf.scene);
             gltf.scene.name = objName
@@ -780,11 +796,11 @@ function handleLoadModel(event) {
             addedObjs.push(obj);
         },
         // called while loading is progressing
-        function (xhr) {
+        function(xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         },
         // called when loading has errors
-        function (error) {
+        function(error) {
             console.log('An error happened');
         }
     );
@@ -863,10 +879,10 @@ function saveScene() {
     console.log("Sending data to save:", dataToSend);
 
     fetch(`http://localhost:3000/postFile?filename=${sceneName}.conf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-        body: JSON.stringify(dataToSend)
-    })
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            body: JSON.stringify(dataToSend)
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -890,11 +906,11 @@ function loadScene() {
         scene.remove(scene.children.pop());
     }
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
-        if (!response.ok) {
-            return response.json().then(res => { throw new Error(res.message) });
-        }
-        return response.json();
-    })
+            if (!response.ok) {
+                return response.json().then(res => { throw new Error(res.message) });
+            }
+            return response.json();
+        })
         .then(data => {
 
             addedSplats = data.ksplats
@@ -910,28 +926,30 @@ function loadScene() {
                 loadSplinePoints(data.cameraPaths)
 
             var receivedObjs = data.objects //converted to added objs in next bit of code
-            // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
-            // Rebuild objects
+                // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
+                // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
                     // resource URL
                     obj.path,
                     // called when the resource is loaded
-                    function (gltf) {
-                        // I don't think these are necessary
-                        gltf.scene.userData['draggable'] = true;
-                        gltf.scene.userData['deletable'] = true;
-                        gltf.scene.userData['objIndex'] = addedObjs.length;
+                    function(gltf) {
+                        // // I don't think these are necessary
+                        // gltf.scene.userData['draggable'] = true;
+                        // gltf.scene.userData['deletable'] = true;
+
                         gltf.scene.name = obj.name;
 
                         scene.add(gltf.scene);
                         let tempObj = {
                             'path': obj.path,
                             'name': obj.name,
-                            'index': addedObjs.length,
-                            'ref': gltf.scene, //remove transform and add active reference when loading scene
+                            'ref': gltf.scene,
+                            'indexUUID': gltf.scene.uuid
+                                //remove transform and add active reference when loading scene
                         }
                         gltf.scene.userData = obj.userData;
+                        gltf.scene.userData['indexUUID'] = gltf.scene.uuid;
                         addedObjs.push(tempObj);
 
                         //Set Transforms from config file.
@@ -943,11 +961,11 @@ function loadScene() {
                         // @nisan has done something here
                     },
                     // called while loading is progressing
-                    function (xhr) {
+                    function(xhr) {
                         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                     },
                     // called when loading has errors
-                    function (error) {
+                    function(error) {
                         console.log('An error happened:', error);
                     }
                 );
