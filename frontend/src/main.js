@@ -130,10 +130,7 @@ function UpdateSplatUIList() {
     for (let index = 0; index < addedSplats.length; index++) {
         objectList[addedSplats[index].name] = viewer.getSplatScene(index);
     }
-    removeControllers();
-    removeTransformFolder(objectControls);
-    if (objectController) objectController = objectControls.remove(objectController)
-    selectedObjectDropDown = { "selectedObject": null };
+    DisableDropDownTemp();
     console.log(objectController)
     objectController = objectControls.add(selectedObjectDropDown, "selectedObject", Object.keys(objectList)).name('Choose a Splat');
 
@@ -152,6 +149,12 @@ function UpdateSplatUIList() {
     })
 }
 
+function DisableDropDownTemp() {
+    removeControllers();
+    removeTransformFolder(objectControls);
+    if (objectController) objectController = objectControls.remove(objectController)
+    selectedObjectDropDown = { "selectedObject": null };
+}
 
 UpdateSplatUIList()
 
@@ -711,6 +714,7 @@ function update() {
         ActiveEuler.y = DegreeEuler.y * Math.PI / 180;
         ActiveEuler.z = DegreeEuler.z * Math.PI / 180;
         quat = quat.setFromEuler(ActiveEuler)
+            // console.log(selectedObject)
         selectedObject.quaternion.copy(quat);
     }
 
@@ -737,34 +741,63 @@ function get_url_param(key) {
 
 
 function deleteSelectedSplat(splatRef) {
+    for (let index = 0; index < addedSplats.length; ++index) {
+        let splatScene = viewer.getSplatScene(index);
+        addedSplats[index].position = splatScene.position.toArray();
+        addedSplats[index].rotation = splatScene.quaternion.toArray()
+        addedSplats[index].scale = splatScene.scale.toArray();
+        addedSplats[index].uuid = index;
+    }
     let indexToRemove = addedSplats.findIndex((obj) => obj['uuid'] == splatRef.uuid);
     console.log("removing: ", indexToRemove, " vs ", splatRef.uuid);
-    console.log("Selected OBJ BEFORE CONTROLLER", addedSplats);
-
+    // console.log("Splats before splicing");
+    // for (let index = 0; index < addedSplats.length; index++) { console.log(addedSplats[index]) }
     if (indexToRemove !== -1) {
         addedSplats.splice(indexToRemove, 1);
-        console.log("After remove", addedSplats);
     }
+
+    console.log("After remove", );
+    // for (let index = 0; index < addedSplats.length; index++) { console.log(addedSplats[index]) }
     reloadSplats();
-    console.log("Selected OBJ BEFORE CONTROLLER", addedSplats);
+    // console.log("Selected OBJ BEFORE CONTROLLER", addedSplats);
 
 }
+
 
 function reloadSplats() {
     if (addedSplats.length > 0) {
         viewer.addSplatScenes(addedSplats).then(() => {
             for (let index = 0; index < addedSplats.length; index++) {
                 let splatScene = viewer.getSplatScene(index);
-                splatScene.uuid =
-                    addedSplats[index].uuid = index;
+                splatScene.uuid = index;
+                addedSplats[index].uuid = index;
             }
             UpdateSplatUIList();
+            manualApplySplatTransformFromRef()
         })
     } else {
         alert("At Least one Splat  must be Loaded at a Time!");
         UpdateSplatUIList();
     }
 
+}
+
+function manualApplySplatTransformFromRef() {
+    for (let index = 0; index < addedSplats.length; index++) {
+        let splatScene = viewer.getSplatScene(index);
+        console.log(addedSplats)
+        splatScene.quaternion._x = addedSplats[index].rotation[0];
+        splatScene.quaternion._y = addedSplats[index].rotation[1];
+        splatScene.quaternion._z = addedSplats[index].rotation[2];
+        splatScene.quaternion._w = addedSplats[index].rotation[3];
+        splatScene.position.x = addedSplats[index].position[0];
+        splatScene.position.y = addedSplats[index].position[1];
+        splatScene.position.z = addedSplats[index].position[2];
+        splatScene.scale.x = addedSplats[index].scale[0];
+        splatScene.scale.y = addedSplats[index].scale[1];
+        splatScene.scale.z = addedSplats[index].scale[2];
+
+    }
 }
 
 
