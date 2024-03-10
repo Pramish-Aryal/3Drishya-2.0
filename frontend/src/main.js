@@ -241,35 +241,34 @@ function removeControllers() {
 
 // objectController.onChange(updateSelectedObject);
 
+var fpsContainer = document.createElement('div');
+fpsContainer.style.position = 'absolute';
+fpsContainer.style.top = '10px';
+fpsContainer.style.left = '10px';
+fpsContainer.style.color = '#ffffff';
+document.body.appendChild(fpsContainer);
 
-function updateObject(selectedObject) {
-    // // Update selected object based on input values
+var frameCount = 0;
+var startTime = performance.now();
 
-    // selectedObject.position.x = parseFloat(positionFolder.__controllers[0].object.x);
-    // console.log("tf")
-    // selectedObject.position.y = parseFloat(positionFolder.__controllers[1].object.y);
-    // selectedObject.position.z = parseFloat(positionFolder.__controllers[2].object.z);
+function updateFPS() {
+    var currentTime = performance.now();
+    var elapsedTime = currentTime - startTime;
+    frameCount++;
 
-    // let euler = new Three.Euler(parseFloat(rotationFolder.__controllers[0].object.x), parseFloat(rotationFolder.__controllers[1].object.y), parseFloat(rotationFolder.__controllers[2].object.z));
-    // let quat = new Three.Quaternion();
-    // quat = quat.setFromEuler(euler)
-    // selectedObject.quaternion.copy(quat);
-    // console.log(quat, "   vs ", selectedObject.quaternion);
-    // // selectedObject.quaternion._x = quat.x;
-    // // selectedObject.quaternion._y = quat.y;
-    // // selectedObject.quaternion._z = quat.z;
-    // // selectedObject.quaternion._w = quat.w;
+    if (elapsedTime >= 1000) {
+        var fps = frameCount / (elapsedTime / 1000);
+        fpsContainer.innerText = 'FPS: ' + Math.round(fps);
 
-    // selectedObject.scale.x = parseFloat(scaleFolder.__controllers[0].object.x);
-    // selectedObject.scale.y = parseFloat(scaleFolder.__controllers[1].object.y);
-    // selectedObject.scale.z = parseFloat(scaleFolder.__controllers[2].object.z);
+        // Reset frame count and start time for the next second
+        frameCount = 0;
+        startTime = currentTime;
+    }
 
+    requestAnimationFrame(updateFPS);
 }
 
-
-
-
-
+updateFPS();
 
 //////////    GUI END   ///////////////
 

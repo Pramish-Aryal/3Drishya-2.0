@@ -2,60 +2,60 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-	<title>Editor</title>
-	
-	<link rel="stylesheet" type="text/css" href="/src/editorstyle.css">
-	<script type="module" src="/src/main.js"></script>
+    <meta charset="utf-8">
+    <title>Editor</title>
+
+    <link rel="stylesheet" type="text/css" href="/src/editorstyle.css">
+    <script type="module" src="/src/main.js"></script>
 </head>
 
 <body>
-	<!-- <button type="button" id="saveSceneButton">Save Scene</button>
+    <!-- <button type="button" id="saveSceneButton">Save Scene</button>
 		<button type="button" id="loadSceneButton">Load Scene</button> -->
-	<div id="control-panel">
-		<div id="fileHandling">
-			<div class="insideText1">Load KSplat:<input accept=".ksplat, .splat" type="file" id="fileInput1"></div>
-			<div class="insideText2">Load Model:<input accept=".fbx, .obj, .gltf" type="file" id="fileInput2"></div>
-			<div class="insideText3"><button id="loadSceneButton">Load Scene</button></div>
-			<div class="insideText4"><button id="saveSceneButton">Save Scene</button></div>
-		</div>
-		<div id="splat">
-			<div id="splat-menu"></div>
-			<div id="splat-editor"></div>
-		</div>
-	</div>
-	
+    <div id="control-panel">
+        <div id="fileHandling">
+            <div class="insideText1">Load KSplat:<input accept=".ksplat, .splat, .ply" type="file" id="fileInput1"></div>
+            <div class="insideText2">Load Model:<input accept=".fbx, .obj, .gltf" type="file" id="fileInput2"></div>
+            <div class="insideText3"><button id="loadSceneButton">Load Scene</button></div>
+            <div class="insideText4"><button id="saveSceneButton">Save Scene</button></div>
+        </div>
+        <div id="splat">
+            <div id="splat-menu"></div>
+            <div id="splat-editor"></div>
+        </div>
+    </div>
 
-	<div id="object-info">
-		<!-- <div id="canvas-model"> -->
-			<div id="close-button"><img src="../images/editor/cancel.png" width="30px" height="30px"></div>
-			<canvas id="object-model"></canvas>
-			<!-- </div> -->
-		<div id="info-panel">
-			<div id="info-control">
-				<div id="editInfoButton"><img src="../images/editor/edit1.png" width="30px" height="30px"></div>
-			</div>
-			<div id="userDataTitle"></div>
-			<br/>
-			<div id="userDataContent"></div>
-			<div id="editTitle">
-			   <h2><label for="editTitleInfo">Title</label></h2>
-				<input type="text" name="editTitleInfo" id="editTitleInfo" ><br>
-			</div>
-			<div id ="editContent">
-				<h2><label for="editContentInfo">Content</label></h2>
-				<textarea name="editContentInfo" id ="editContentInfo" rows="10" cols="50" ></textarea><br>
-			</div>
-			<div id="updateContentButton">
-				<button id="updateInfoButton">Update</button>
-				<button id="cancelInfoButton">Cancel</button>
-			</div>
-			
-		</div>
 
-	</div>
-	
-	<canvas class="webgl_canvas"></canvas>
+    <div id="object-info">
+        <!-- <div id="canvas-model"> -->
+        <div id="close-button"><img src="../images/editor/cancel.png" width="30px" height="30px"></div>
+        <canvas id="object-model"></canvas>
+        <!-- </div> -->
+        <div id="info-panel">
+            <div id="info-control">
+                <div id="editInfoButton"><img src="../images/editor/edit1.png" width="30px" height="30px"></div>
+            </div>
+            <div id="userDataTitle"></div>
+            <br/>
+            <div id="userDataContent"></div>
+            <div id="editTitle">
+                <h2><label for="editTitleInfo">Title</label></h2>
+                <input type="text" name="editTitleInfo" id="editTitleInfo"><br>
+            </div>
+            <div id="editContent">
+                <h2><label for="editContentInfo">Content</label></h2>
+                <textarea name="editContentInfo" id="editContentInfo" rows="10" cols="50"></textarea><br>
+            </div>
+            <div id="updateContentButton">
+                <button id="updateInfoButton">Update</button>
+                <button id="cancelInfoButton">Cancel</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <canvas class="webgl_canvas"></canvas>
 </body>
 
 </html>
