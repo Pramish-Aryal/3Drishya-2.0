@@ -1,1 +1,1 @@
-![Demo](![alt text](http://url/to/img.png))
+![Demo]([alt text])
