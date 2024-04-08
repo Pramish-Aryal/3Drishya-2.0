@@ -977,7 +977,45 @@ function saveScene() {
         .catch(error => {
             console.error('There was a problem saving the JSON data:', error);
         });
+
+    // Capture ss and send to backend
+    captureFrameAndSendToBackend();
+
 }
+
+
+// main.js
+
+function captureFrameAndSendToBackend() {
+    // Ensure the renderer is set to the desired size
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.render(scene, camera);
+
+    renderer.domElement.toBlob(blob => {
+        const formData = new FormData();
+        formData.append('image', blob, `${sceneName}.png`);
+
+        fetch('http://localhost:3000/save-image', {
+                method: 'POST',
+                body: formData, // No headers required, as FormData sets the 'Content-Type' automatically
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Image sent to the backend successfully.');
+                } else {
+                    console.error('Failed to send the image to the backend.');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending the image to the backend:', error);
+            });
+    }, 'image/png'); // Or 'image/jpeg' for JPEG format
+}
+
+
+// Example usage:
+// Call captureFrameAndSendToBackend() wherever needed to capture the frame and send it to the backend
+
 
 function loadScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
