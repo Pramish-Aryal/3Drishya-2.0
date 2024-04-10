@@ -158,15 +158,6 @@ function DisableDropDownTemp() {
 
 UpdateSplatUIList()
 
-// scene.traverse((child) => {
-//     if (child instanceof Three.Mesh) {
-//         if (child.name) {
-//             objectList[child.name] = child;
-//         }
-//     }
-// });
-// console.log(objectList)
-
 // console.log(objectController)
 function createTransformFolder(objectControls) {
     positionFolder = objectControls.addFolder('Position');
@@ -272,9 +263,6 @@ updateFPS();
 
 //////////    GUI END   ///////////////
 
-
-
-
 //text-renderer
 const labelRenderer = new CSS2DRenderer();
 labelRenderer.setSize(window.innerWidth, window.innerHeight);
@@ -328,40 +316,6 @@ canvas.addEventListener('mousedown', (event) => {
     }
 });
 
-
-// canvas.addEventListener('mousemove', (event) => {
-//     const mouse = new Three.Vector2();
-//     const raycaster = new Three.Raycaster();
-
-//     // calculate mouse position in normalized device coordinates
-//     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-//     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-//     // update the picking ray with the camera and mouse position
-//     raycaster.setFromCamera(mouse, camera);
-
-//     // calculate objects intersecting the picking ray
-//     let intersects = raycaster.intersectObjects(scene.children, true); // Use true to check descendants
-//     for (let i = 0; i < intersects.length; i++) {
-//         let object = intersects[i].object;
-//         // Check if the intersected object or its parent has the 'draggable' property
-//         while (object && !object.userData['draggable']) {
-//             object = object.parent;
-//         }
-//         if (object && object.userData['draggable'] && object.userData['title']) {
-
-//             object.add(labelObject);
-//             labelDiv.textContent =  object.userData.title
-//             labelObject.visible = true
-
-//             break; // Only attach the first draggable object
-//         }
-//         else{
-//             object = null;
-//             labelObject.visible = false
-//         }
-//     }
-// });
 
 
 // Overlay Scene
@@ -578,8 +532,16 @@ window.addEventListener('keydown', function(event) {
                     }
                     scene.remove(object);
                     updateSplineOutline();
+
+
                 } else if (object.userData['deletable'] != undefined) {
-                    console.log("Before remove", addedObjs);
+                    console.log("Object to delete UUID: \n", object.userData['indexUUID'], "\n")
+                    console.log("All present UUID: \n")
+                    addedObjs.forEach(element => {
+                        console.log(element['indexUUID'])
+                    });
+
+                    console.log("Before remove: ", addedObjs.length, addedObjs);
                     // console.log(addedObjs);
                     scene.remove(object);
                     console.log(addedObjs[addedObjs.length - 1].indexUUID, " vs uuuuid ", object.uuid)
@@ -587,7 +549,9 @@ window.addEventListener('keydown', function(event) {
                     console.log("removing: ", indexToRemove);
                     if (indexToRemove !== -1) {
                         addedObjs.splice(indexToRemove, 1);
-                        console.log("After remove", addedObjs);
+                        console.log("After remove", addedObjs.length, addedObjs);
+                    } else {
+                        console.log("Some error in removing, indexUUID did not match")
                     }
 
                     // console.log(addedObjs);
@@ -704,9 +668,7 @@ function render_scene() {
 }
 
 function update() {
-
     mouse_controls.update();
-
     if (selectedObject) {
         let quat = new Three.Quaternion();
         ActiveEuler.x = DegreeEuler.x * Math.PI / 180;
@@ -721,15 +683,10 @@ function update() {
     // quaternion.setFromAxisAngle(new Three.Vector3(1, 0, 0), angle);
     // viewer.getSplatScene(0).quaternion.copy(quaternion);
     // angle += Math.PI / 10;
-
-
-
-
     update_angle();
-
     render_scene();
-
     requestAnimationFrame(update);
+    window.ao = addedObjs
 }
 
 function get_url_param(key) {
@@ -747,17 +704,24 @@ function deleteSelectedSplat(splatRef) {
         addedSplats[index].scale = splatScene.scale.toArray();
         addedSplats[index].uuid = index;
     }
-    let indexToRemove = addedSplats.findIndex((obj) => obj['uuid'] == splatRef.uuid);
-    console.log("removing: ", indexToRemove, " vs ", splatRef.uuid);
-    // console.log("Splats before splicing");
-    // for (let index = 0; index < addedSplats.length; index++) { console.log(addedSplats[index]) }
-    if (indexToRemove !== -1) {
-        addedSplats.splice(indexToRemove, 1);
-    }
+    if (addedSplats.length > 1) {
 
-    console.log("After remove", );
-    // for (let index = 0; index < addedSplats.length; index++) { console.log(addedSplats[index]) }
-    reloadSplats();
+        let indexToRemove = addedSplats.findIndex((obj) => obj['uuid'] == splatRef.uuid);
+        console.log("removing: ", indexToRemove, " vs ", splatRef.uuid);
+        // console.log("Splats before splicing");
+        // for (let index = 0; index < addedSplats.length; index++) { console.log(addedSplats[index]) }
+        if (indexToRemove !== -1) {
+            addedSplats.splice(indexToRemove, 1);
+        }
+
+        console.log("After remove", );
+        // for (let index = 0; index < addedSplats.length; index++) { console.log(addedSplats[index]) }
+        reloadSplats();
+    } else {
+
+        alert("At Least one Splat  must be Loaded at a Time!");
+        UpdateSplatUIList();
+    }
     // console.log("Selected OBJ BEFORE CONTROLLER", addedSplats);
 
 }
@@ -871,8 +835,8 @@ function handleLoadModel(event) {
             let obj = {
                 'path': filePath,
                 'name': objName,
-                'ref': gltf.scene //remove ref with transfrom when saving scene
-
+                'ref': gltf.scene, //remove ref with transfrom when saving scene
+                'indexUUID': gltf.scene.uuid
             }
             addedObjs.push(obj);
         },
@@ -892,28 +856,7 @@ function handleLoadModel(event) {
     console.log("Model File path:", filePath);
 }
 
-function main() {
 
-    sceneName = get_url_param('scene');
-
-
-
-    // if (sceneName != "blank") {
-    //     console.log(`Loading Scene: ${sceneName}`);
-    //     loadScene(sceneName + ".conf");
-    // }
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    // document.body.appendChild(renderer.domElement);
-
-    camera.position.z = 5;
-
-    spline_init();
-
-    update();
-}
-
-main();
 
 //////////////////////// test to generate conf file
 
@@ -984,8 +927,6 @@ function saveScene() {
 }
 
 
-// main.js
-
 function captureFrameAndSendToBackend() {
     // Ensure the renderer is set to the desired size
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1013,9 +954,6 @@ function captureFrameAndSendToBackend() {
 }
 
 
-// Example usage:
-// Call captureFrameAndSendToBackend() wherever needed to capture the frame and send it to the backend
-
 
 function loadScene() {
     // this basically has all the scene and object info, we'll split them in the backend for now I suppose
@@ -1025,6 +963,7 @@ function loadScene() {
     while (scene.children.length > popLength) {
         scene.remove(scene.children.pop());
     }
+
     fetch(`http://localhost:3000/readFile?filename=${sceneName}.conf`).then(response => {
             if (!response.ok) {
                 return response.json().then(res => { throw new Error(res.message) });
@@ -1032,6 +971,7 @@ function loadScene() {
             return response.json();
         })
         .then(data => {
+            // load ksplats  
             addedSplats = data.ksplats
             if (data.ksplats.length > 0) {
 
@@ -1049,13 +989,14 @@ function loadScene() {
                 alert("no splats found in save file");
             }
 
+            //load cam paths
             spline_init();
 
             if (data.cameraPaths)
                 loadSplinePoints(data.cameraPaths)
 
+            //load objs
             var receivedObjs = data.objects //converted to added objs in next bit of code
-                // Done? TODO: @nisan need to add the thing for rotating the objects as well, I don't want to think about them
                 // Rebuild objects
             data.objects.forEach(obj => {
                 loader.load(
@@ -1064,8 +1005,8 @@ function loadScene() {
                     // called when the resource is loaded
                     function(gltf) {
                         // // I don't think these are necessary
-                        // gltf.scene.userData['draggable'] = true;
-                        // gltf.scene.userData['deletable'] = true;
+                        gltf.scene.userData['draggable'] = true;
+                        gltf.scene.userData['deletable'] = true;
 
                         gltf.scene.name = obj.name;
 
@@ -1109,3 +1050,23 @@ function loadScene() {
 
 
 }
+
+
+function main() {
+    sceneName = get_url_param('scene');
+    // if (sceneName != "blank") {
+    //     console.log(`Loading Scene: ${sceneName}`);
+    //     loadScene(sceneName + ".conf");
+    // }
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    // document.body.appendChild(renderer.domElement);
+
+    camera.position.z = 5;
+
+    spline_init();
+
+    update();
+    loadScene();
+}
+
+main();

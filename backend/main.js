@@ -149,12 +149,16 @@ app.post('/save-image', upload.single('image'), (req, res) => {
 app.get('/scene-image/:sceneName', (req, res) => {
     const sceneName = req.params.sceneName;
     const imagePath = path.join(imagesDir, `${sceneName}.png`);
+    var er = false
 
-    // Check if the image exists
     fs.access(imagePath, fs.constants.F_OK, (err) => {
         if (err) {
-            console.error('File does not exist:', imagePath);
+            er = true
+                // console.error('File does not exist:', imagePath);
             return res.status(404).send('Image not found');
+        }
+        if (er) {
+            console.log("one or more splash images were not found")
         }
 
         // Using sendFile with an absolute path

@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Fallback image if the specific scene image doesn't exist or failed to load
                     this.src = 'images/editor/defaultImage.png'; // Set a default or placeholder image path
                 };
-                img.style.width = '450px'; // Set the width
-                img.style.height = '300px'; // Set the height
+                img.style.width = '450px';
+                img.style.height = '300px';
                 img.style.objectFit = 'contain';
 
 
