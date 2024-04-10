@@ -31,7 +31,7 @@ const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerH
 const light = new Three.AmbientLight(0xffffff); // soft white light
 scene.add(light);
 
-const spotLight = new Three.SpotLight(0xffffff, 4.5);
+const spotLight = new Three.SpotLight(0xffffff, 15);
 spotLight.position.set(0, 1500, 200);
 spotLight.angle = Math.PI * 0.2;
 spotLight.decay = 0;
@@ -306,8 +306,10 @@ canvas.addEventListener('mousedown', (event) => {
             if (event.button === 0 && isShiftPressed) {
                 control.attach(object);
             } else if (event.button === 2 && isShiftPressed) {
-                objectInfo.style.display = "flex";
-                displayObjectInfo(object);
+                if (object.userData['infoDisplay']) {
+                    objectInfo.style.display = "flex";
+                    displayObjectInfo(object);
+                }
             } else if (event.button == 1) {
 
             }
@@ -372,7 +374,7 @@ function objectSceneInit(objects) {
     objectRenderer.render(objectScene, objectCamera);
 }
 
-
+let displayingInfoMode = false;
 
 function displayObjectInfo(selectedObject) {
     // Set the content of object-info based on the userData of the selected object
@@ -391,6 +393,8 @@ function displayObjectInfo(selectedObject) {
     cancelInfoButton.style.display = "none";
     //enables object selected to be rendered in object info
     renderObjectModel = true
+
+    displayingInfoMode = true;
     objectSceneInit(selectedObject)
         // console.log(selectedObject)
 
@@ -465,7 +469,7 @@ closeButton.addEventListener("click", () => {
     if (objectInfoControls) {
         objectInfoControls.enabled = false; // Disable the controls when closing
     }
-
+    displayingInfoMode = false;
 });
 
 function disposeObjectScene() {
@@ -515,6 +519,10 @@ window.addEventListener('keydown', function(event) {
             addPoint(camera.position);
             break;
         case "delete":
+            if (displayingInfoMode) {
+                break;
+            } 
+            
             if (control.object) {
 
                 let object = control.object;
@@ -826,9 +834,13 @@ function handleLoadModel(event) {
         filePath,
         // called when the resource is loaded
         function(gltf) {
+            let infoDisplay = !objName.startsWith('_');
+
             gltf.scene.userData['draggable'] = true;
             gltf.scene.userData['deletable'] = true;
             gltf.scene.userData['indexUUID'] = gltf.scene.uuid;
+            gltf.scene.userData['infoDisplay'] = infoDisplay;
+
 
             scene.add(gltf.scene);
             gltf.scene.name = objName
@@ -836,7 +848,8 @@ function handleLoadModel(event) {
                 'path': filePath,
                 'name': objName,
                 'ref': gltf.scene, //remove ref with transfrom when saving scene
-                'indexUUID': gltf.scene.uuid
+                'indexUUID': gltf.scene.uuid,
+                'infoDisplay': infoDisplay
             }
             addedObjs.push(obj);
         },
@@ -1009,6 +1022,10 @@ function loadScene() {
                         gltf.scene.userData['deletable'] = true;
 
                         gltf.scene.name = obj.name;
+
+                        if (!gltf.scene.name.startsWith('_')) {
+                            obj.userData.infoDisplay = true;
+                        }
 
                         scene.add(gltf.scene);
                         let tempObj = {
