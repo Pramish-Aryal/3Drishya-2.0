@@ -31,7 +31,7 @@ const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerH
 const light = new Three.AmbientLight(0xffffff); // soft white light
 scene.add(light);
 
-const spotLight = new Three.SpotLight(0xffffff, 15);
+const spotLight = new Three.SpotLight(0xffffff, 7);
 spotLight.position.set(0, 1500, 200);
 spotLight.angle = Math.PI * 0.2;
 spotLight.decay = 0;
@@ -486,6 +486,11 @@ addEventListener('keyup', (event) => {
 })
 
 window.addEventListener('keydown', function(event) {
+
+    if (displayingInfoMode) {
+        return;
+    } 
+
     keyboard[event.key] = true;
     switch (event.key.toLowerCase()) {
         case "w":
@@ -519,10 +524,6 @@ window.addEventListener('keydown', function(event) {
             addPoint(camera.position);
             break;
         case "delete":
-            if (displayingInfoMode) {
-                break;
-            } 
-            
             if (control.object) {
 
                 let object = control.object;

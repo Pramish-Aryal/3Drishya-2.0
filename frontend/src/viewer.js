@@ -21,6 +21,18 @@ const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerH
 const light = new Three.AmbientLight(0xffffff); // soft white light
 scene.add(light);
 
+const spotLight = new Three.SpotLight(0xffffff, 7);
+spotLight.position.set(0, 1500, 200);
+spotLight.angle = Math.PI * 0.2;
+spotLight.decay = 0;
+spotLight.castShadow = true;
+spotLight.shadow.camera.near = 200;
+spotLight.shadow.camera.far = 2000;
+spotLight.shadow.bias = -0.000222;
+spotLight.shadow.mapSize.width = 1024;
+spotLight.shadow.mapSize.height = 1024;
+scene.add(spotLight);
+
 camera.position.set(0, 0, 100);
 camera.lookAt(0, 0, 0);
 
@@ -109,9 +121,10 @@ function onDocumentMouseClick(event) {
             object = object.parent;
         }
         if (object && object.userData['draggable']) {
-
-            objectInfo.style.display = "flex";
-            displayObjectInfo(object);
+            if (object.userData['infoDisplay']) {
+                objectInfo.style.display = "flex";
+                displayObjectInfo(object);
+            }
             break; // Only attach the first draggable object
         }
     }
@@ -367,6 +380,7 @@ function loadScene() {
                     // called when the resource is loaded
                     function (gltf) {
                         gltf.scene.userData['draggable'] = true;
+
                         scene.add(gltf.scene);
                         let tempObj = {
                             'path': obj.path,
